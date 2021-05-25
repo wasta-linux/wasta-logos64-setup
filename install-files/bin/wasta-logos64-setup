@@ -40,11 +40,20 @@ fi
 
 # Directories
 WINE_DIR=/opt/wasta-wine64
+WINELOADER="${WINE_DIR}/bin/wine64"
+export WINELOADER
+WINEARCH="win64"
+export WINEARCH
+WINESERVER="${WINE_DIR}/bin/wineserver"
+export WINESERVER
 WINETRICKS_DIR=/opt/wasta-winetricks
 INSTALLER_DIR=/opt/wasta-logos64-installer
 DOWNLOAD_DIR="$(xdg-user-dir DOWNLOAD)"
 DIR=/usr/share/wasta-logos64-setup
-PREFIX=/home/$USER/.wine-logos64
+WINEPREFIX=/home/$USER/.wine-logos64
+export WINEPREFIX
+WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe="
+export WINEDLLOVERRIDES
 ZENITY_SETTINGS="--no-wrap --height=200 --width=500 --window-icon=$DIR/resources/wasta-linux.svg"
 
 
@@ -67,13 +76,15 @@ setupPrefix () {
     # Initialize prefix.
     # Note: WINEDLLOVERRIDES was added to try to prevent mono and gecko prompts.
     #   But some users are having freezing issues so I am reverting this.
-    WINEPREFIX=$PREFIX WINEARCH=win64 WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe=" ${WINE_DIR}/bin/wine64 wineboot | zenity \
+    echo "Starting wineboot..."
+    ${WINE_DIR}/bin/wine64 wineboot | zenity \
         --height=150 --width=450 --progress --pulsate --auto-close \
         --window-icon=$DIR/resources/wasta-linux.svg \
         --title="Setting up Wine Prefix" \
-        --text="Setting up Wine Prefix... \n\n" &
+        --text="Setting up Wine Prefix... \n\n"
     # get zenity process id
     PID_ZENITY=$!
+    echo "wineboot "
 
     # get firstly created process id, which is running parallel to zenity
     PID_PROCESS=$(pgrep -o -P $$)
@@ -108,7 +119,7 @@ setupPrefix () {
         "-q dotnet48" \
     )
     for i in "${installs[@]}"; do
-        WINEPREFIX=$PREFIX WINE="${WINE_DIR}/bin/wine64" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" "$i" | zenity \
+        WINEPREFIX=$PREFIX WINE="${WINE_DIR}/bin/wine64" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" $i | zenity \
             --height=150 --width=450 --progress --pulsate --auto-close \
             --window-icon=$DIR/resources/wasta-linux.svg \
             --title="Installing $i" \
