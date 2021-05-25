@@ -42,6 +42,8 @@ fi
 WINE_DIR=/opt/wasta-wine64
 WINELOADER="${WINE_DIR}/bin/wine64"
 export WINELOADER
+WINE="$WINELOADER"
+export WINE
 WINEARCH="win64"
 export WINEARCH
 WINESERVER="${WINE_DIR}/bin/wineserver"
