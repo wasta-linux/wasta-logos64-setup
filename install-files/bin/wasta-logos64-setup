@@ -18,6 +18,7 @@
 #   2020-03-12 rik: updating logo
 #   2020-05-11 rik: adding sleep before launcher edits
 #   2020-05-18 rik: setting Downloads folder from xdg-user-dir
+#   2020-05-25 ndm: updating with tips from ferion11 install script
 #
 # ==============================================================================
 
@@ -31,15 +32,29 @@ then
     exit 0
 fi
 
+
 # ------------------------------------------------------------------------------
-# Function: setupPrefix
-#
-#   Setup Prefix for Logos
+# Set global variables.
+# ------------------------------------------------------------------------------
+# Directories
+WINE_DIR=/opt/wasta-wine64
+WINETRICKS_DIR=/opt/wasta-winetricks
+INSTALLER_DIR=/opt/wasta-logos64-installer
+DOWNLOAD_DIR="$(xdg-user-dir DOWNLOAD)"
+DIR=/usr/share/wasta-logos64-setup
+PREFIX=/home/$USER/.wine-logos64
+ZENITY_SETTINGS="--no-wrap --height=200 --width=500 --window-icon=$DIR/resources/wasta-linux.svg"
+
+
+# ------------------------------------------------------------------------------
+# Define functions.
 # ------------------------------------------------------------------------------
 setupPrefix () {
+    ### Setup the WINE prefix for Logos.
+
     cleanupPrefix
 
-    # copy in winetricks cache
+    # Copy in winetricks cache.
     mkdir -p $HOME/.cache/winetricks
     rsync -av $WINETRICKS_DIR/winetricks-cache/ $HOME/.cache/winetricks/ | tee >(zenity \
         --height=150 --width=450 --progress --pulsate --auto-close \
@@ -47,66 +62,78 @@ setupPrefix () {
         --title="Copying Winetricks Cache" \
         --text="Copying Winetricks Cache... \n\n")
 
-    # setup prefix
+    # Initialize prefix.
     # Note: WINEDLLOVERRIDES was added to try to prevent mono and gecko prompts.
     #   But some users are having freezing issues so I am reverting this.
-    WINEPREFIX=$PREFIX WINEARCH=win64 WINEDLLOVERRIDES="mscoree,mshtml=" $WINE_DIR/bin/wineboot | zenity \
+    WINEPREFIX=$PREFIX WINEARCH=win64 WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe=" ${WINE_DIR}/bin/wineboot | zenity \
         --height=150 --width=450 --progress --pulsate --auto-close \
         --window-icon=$DIR/resources/wasta-linux.svg \
         --title="Setting up Wine Prefix" \
         --text="Setting up Wine Prefix... \n\n" &
     # get zenity process id
-    PID_ZENITY=${!}
+    PID_ZENITY=$!
 
     # get firstly created process id, which is running parallel to zenity
     PID_PROCESS=$(pgrep -o -P $$)
 
     progressCheck $PID_ZENITY $PID_PROCESS
-    if [ "$?" -eq 99 ];
-    then
+    if [ "$?" -eq 99 ]; then
         # zenity canceled, Prefix setup didn't complete
         # some failure: exit
         errorExit "<b>Setup of Logos Wine Prefix failed!</b>"
     fi
 
-    # do NOT use -q or else dotnet40 is less stable
-    WINEPREFIX=$PREFIX WINE="$WINE_DIR/bin/wine64" WINESERVER="$WINE_DIR/bin/wineserver" "$WINETRICKS_DIR/winetricks" dotnet40 dotnet48
+    # Make sure residual wineprocesses clear out.
+    wait_for_wineserver
 
-    WINEPREFIX=$PREFIX WINE="$WINE_DIR/bin/wine64" WINESERVER="$WINE_DIR/bin/wineserver" "$WINETRICKS_DIR/winetricks" -q corefonts | zenity \
-        --height=150 --width=450 --progress --pulsate --auto-close \
-        --window-icon=$DIR/resources/wasta-linux.svg \
-        --title="Installing CoreFonts" \
-        --text="Installing Corefonts... \n\n" &
-    # get zenity process id
-    PID_ZENITY=${!}
+    # Make registry changes.
+    # NOTE: The following is done with WINEDLLOVERRIDES above.
+    # wine_reg_install "${DIR}/data/disable-winemenubuilder.reg"
+    # NOTE: The following is installed with winetricks below.
+    # wine_reg_install "${DIR}/data/renderer_gdi.reg"
 
-    # get firstly created process id, which is running parallel to zenity
-    PID_PROCESS=$(pgrep -o -P $$)
-
-    progressCheck $PID_ZENITY $PID_PROCESS
-    if [ "$?" -eq 99 ];
-    then
-        # zenity canceled, Corefonts install didn't complete
-        errorExit "<b>Corefonts install in Logos Wine Prefix failed!</b>"
-    fi
-
-    # set fontsmoothing
-    # https://wiki.archlinux.org/index.php/Wine#Enable_font_smoothing
-    WINEPREFIX=$PREFIX WINE="$WINE_DIR/bin/wine64" WINESERVER="$WINE_DIR/bin/wineserver" "$WINETRICKS_DIR/winetricks" settings fontsmooth=rgb
-
-    #SetDirectDrawRender to GDI (solves graphical glitching of various menus,
+    # Install helpful packages and settings.
+    # TODO: Test use of "-q" option for installs.
+    # NOTES:
+    # - TODO: ferion does not install dotnet40 explicitly; not needed?
+    # - https://wiki.archlinux.org/index.php/Wine#Enable_font_smoothing
+    # - SetDirectDrawRender to GDI solves graphical glitching of various menus,
     #   etc disappearing / reappearing)
-    WINEPREFIX=$PREFIX WINE="$WINE_DIR/bin/wine64" WINESERVER="$WINE_DIR/bin/wineserver" "$WINETRICKS_DIR/winetricks" ddr=gdi
+    installs=( \
+        "-q corefonts" \
+        "-q ddr=gdi" \
+        "-q settings fontsmooth=rgb" \
+        "-q dotnet48" \
+    )
+    for i in "${installs[@]}"; do
+        WINEPREFIX=$PREFIX WINE="${WINE_DIR}/bin/wine64" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" "$i" | zenity \
+            --height=150 --width=450 --progress --pulsate --auto-close \
+            --window-icon=$DIR/resources/wasta-linux.svg \
+            --title="Installing $i" \
+            --text="Installing $i... \n\n" &
+
+        # Get zenity process id.
+        PID_ZENITY="${!}"
+
+        # Get firstly created process id, which is running parallel to zenity.
+        PID_PROCESS=$(pgrep -o -P $$)
+
+        progressCheck $PID_ZENITY $PID_PROCESS
+        if [ "$?" -eq 99 ]; then
+            # Zenity canceled, winetricks install didn't complete.
+            errorExit "<b>$i install in Logos Wine Prefix failed!</b>"
+        fi
+
+        # Ensure that wineserver finishes.
+        wait_for_wineserver "${PREFIX}"
+    done
 
     cleanupPrefix
 }
 
-# ------------------------------------------------------------------------------
-# Function: errorExit
-#
-#   exit script with passed message
-# ------------------------------------------------------------------------------
 errorExit () {
+    ### Exit script with passed message.
+
     zenity --error --no-wrap --height=200 \
         --title="wasta-logos64-setup: Error" \
         --window-icon=$DIR/resources/wasta-linux.svg \
@@ -115,12 +142,9 @@ errorExit () {
     exit 1
 }
 
-# ------------------------------------------------------------------------------
-# Function: cleanupPrefix
-#
-#   various cleanup items for the Logos wine prefix
-# ------------------------------------------------------------------------------
 cleanupPrefix () {
+    ### Perform various cleanup items for the Logos wine prefix.
+
     # remove desktop entries referencing $PREFIX.
     # note: grep --null returns null separated list to handle space in filenames
     # note: xargs -0 to handle null separated items
@@ -128,13 +152,10 @@ cleanupPrefix () {
         | xargs -0 rm >/dev/null 2>&1
 }
 
-# ------------------------------------------------------------------------------
-# Function: progressCheck
-#
-#   Check on process launched in parallel with zenity. If zenity is canceled,
-#   then kill process.
-# ------------------------------------------------------------------------------
 progressCheck () {
+    ### Check on process launched in parallel with zenity.
+    ###     If zenity is canceled, then kill process.
+
     echo
     echo "*** Watching zenity process. If it is canceled then kill PID_PROCESS: $PID_PROCESS"
     echo
@@ -168,18 +189,65 @@ progressCheck () {
     fi
 }
 
+wait_for_wineserver() {
+    ### Run "wineserver -w" and show zenity progress window.
+
+    if [[ -d ${1} ]]; then
+        # Directory passed. Wait for it to be free before continuing.
+        wait_for_process_using_dir "${1}"
+    fi
+	echo "* Waiting for wine64 to end properly..."
+	"${WINE_DIR}/bin/wineserver" -w | zenity --progress --title="Waiting ${WINE_DIR}/bin/wine64 proper end" --text="Waiting for ${WINE_DIR}/bin/wine64 to end properly..." --pulsate --auto-close --no-cancel
+}
+
+wait_for_process_using_dir() {
+    ### Wait on all processes that are using the ${1} directory to finish.
+
+	VERIFICATION_DIR="${1}"
+	VERIFICATION_TIME=7
+	VERIFICATION_NUM=3
+
+	echo "---------------------"
+	echo "* Starting wait_for_process_using_dir..."
+	i=0 ; while true; do
+		i=$((i+1))
+		echo "-------"
+		echo "wait_for_process_using_dir: loop with i=${i}"
+
+		echo "wait_for_process_using_dir: sleep ${VERIFICATION_TIME}"
+		sleep "${VERIFICATION_TIME}"
+
+		FIST_PID="$(lsof -t "${VERIFICATION_DIR}" | head -n 1)"
+		echo "wait_for_process_using_dir FIST_PID: ${FIST_PID}"
+		if [ -n "${FIST_PID}" ]; then
+			i=0
+			echo "wait_for_process_using_dir: tail --pid=${FIST_PID} -f /dev/null"
+			tail --pid="${FIST_PID}" -f /dev/null
+			continue
+		fi
+
+		echo "-------"
+		[ "${i}" -lt "${VERIFICATION_NUM}" ] || break
+	done
+	echo "* End of wait_for_process_using_dir."
+	echo "---------------------"
+}
+
+wine_reg_install() {
+    ### Install wine registry entries.
+
+    REG_FILENAME="${1}"
+    echo "${WINE_DIR}/bin/wine64 regedit.exe ${REG_FILENAME}"
+    ${WINE_DIR}/bin/wine64 regedit.exe "${WORKDIR}"/"${REG_FILENAME}" | zenity --progress --title="Wine regedit" --text="Wine is installing ${REG_FILENAME} in ${WINEPREFIX}" --pulsate --auto-close --no-cancel
+
+    wait_for_wineserver
+    echo "${WINE_DIR}/bin/wine64 regedit.exe ${REG_FILENAME} DONE!"
+}
+
+
 # ==============================================================================
 # Main Processing
 # ==============================================================================
-
-# directories
-WINE_DIR=/opt/wasta-wine64
-WINETRICKS_DIR=/opt/wasta-winetricks
-INSTALLER_DIR=/opt/wasta-logos64-installer
-DOWNLOAD_DIR="$(xdg-user-dir DOWNLOAD)"
-DIR=/usr/share/wasta-logos64-setup
-PREFIX=/home/$USER/.wine-logos64
-ZENITY_SETTINGS="--no-wrap --height=200 --width=500 --window-icon=$DIR/resources/wasta-linux.svg"
 
 zenity --question $ZENITY_SETTINGS \
     --title="wasta-logos64-setup" \
@@ -188,19 +256,16 @@ zenity --question $ZENITY_SETTINGS \
    * Create a 'Logos 64bit Wine Prefix' using a patched wine from 'wasta-wine64'
    * Install .NET 4.8 from 'wasta-winetricks'
    * Install Logos"
-if [ "$?" -ne 0 ];
-then
-    # User didn't said yes: exit
+if [ "$?" -ne 0 ]; then
+    # User didn't say yes; exit.
     exit 0
 fi
 
 # ------------------------------------------------------------------------------
 # Setup Logos Prefix and install Logos
 # ------------------------------------------------------------------------------
-
-if [ -d "$PREFIX" ];
-then
-    # Wine PREFIX exists, ask user if they want to overwrite it or update it
+if [[ -d "$PREFIX" ]]; then
+    # Wine PREFIX exists, ask user if they want to overwrite it or update it.
     zenity --question $ZENITY_SETTINGS \
         --title="wasta-logos64-setup" \
         --text="<b>Remove existing Logos 64bit Wine Prefix?</b>\n
@@ -209,12 +274,12 @@ delete it in order to re-setup a new Logos 64bit Wine Prefix?</i>\n"
 
     if [ "$?" -eq 0 ];
     then
-        # remove PREFIX
+        # Remove PREFIX.
         rm -rf $PREFIX
     fi
     setupPrefix
 else
-    # No Wine PREFIX: prompt user
+    # No Wine PREFIX: prompt user.
     zenity --question $ZENITY_SETTINGS \
         --title="wasta-logos64-setup" \
         --text="<b>Setup Logos 64bit Wine Prefix?</b>\n
@@ -222,22 +287,18 @@ else
 
     if [ "$?" -eq 0 ];
     then
-        # User said yes: setup PREFIX
+        # User said yes: setup PREFIX.
         setupPrefix
     else
-        # exit
         exit 0
     fi
 fi
 
-if [ -d "$PREFIX" ];
-then
+if [[ -d "$PREFIX" ]]; then
     INSTALL_FILE=""
-    if [ -e "$DOWNLOAD_DIR/Logos-x64.msi" ];
-    then
+    if [[ -e "$DOWNLOAD_DIR/Logos-x64.msi" ]]; then
         INSTALL_FILE="$DOWNLOAD_DIR/Logos-x64.msi"
-    elif [ -e "$INSTALLER_DIR/Logos-x64.msi" ];
-    then
+    elif [[ -e "$INSTALLER_DIR/Logos-x64.msi" ]]; then
         INSTALL_FILE="$INSTALLER_DIR/Logos-x64.msi"
     else
         errorExit "<b>A Logos 64bit installer wasn't found in your <i>Downloads</i> folder
@@ -251,34 +312,39 @@ The recommended method is to install the <i>'wasta-logos64-installer'</i> packag
     echo "*** Logos installation file: $INSTALL_FILE"
     echo
 
-    if [ "$INSTALL_FILE" ];
-    then
+    if [[ "$INSTALL_FILE" ]]; then
         # Make Winecfg launcher available for user
         cp $DIR/resources/wine-logos64-winecfg.desktop $HOME/.local/share/applications/
 
         # Set Wine to win7 for Logos install
-        WINEPREFIX=$PREFIX WINE="$WINE_DIR/bin/wine64" WINESERVER="$WINE_DIR/bin/wineserver" "$WINETRICKS_DIR/winetricks" -q win7
+        # TODO: ferion doesn't change the Win type. Needs testing.
+        # WINEPREFIX=$PREFIX WINE="${WINE_DIR}/bin/wine64" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" -q win7
 
-        WINEPREFIX=$PREFIX WINE="$WINE_DIR/bin/wine64" "$WINE_DIR/bin/msiexec" /i "$INSTALL_FILE"
+        WINEPREFIX=$PREFIX WINE="${WINE_DIR}/bin/wine64" "${WINE_DIR}/bin/msiexec" /i "$INSTALL_FILE"
         OUTNUM=$?
-        if [ "$OUTNUM" -ne 0 ];
-        then
-            # some failure: exit
+        if [[ "$OUTNUM" -ne 0 ]]; then
+            # Some failure: exit
             errorExit "<b>Logos 64bit installation failed!</b>\n
 <i>Some error encountered with installation file:</i>\n
 $INSTALL_FILE"
         fi
 
+        # Set Wine to Vista for Logos indexer.
+        ${WINE_DIR}/bin/wine64 reg add "HKCU\\Software\\Wine\\AppDefaults\\LogosIndexer.exe" /v Version /t REG_SZ /d vista /f
+
+        # TODO: Verify that this fixes the need for the following sleep command.
+        # Wait for wineserver to finish.
+        wait_for_wineserver "$PREFIX"
         # not sure why but below edits to launcher were not getting applied
         #   with a message that the file wasn't found:
         #   Adding sleep to see if helps
-        sleep 2
+        # sleep 2
 
         # point to specific version of wine to run Logos
-        sed -i -e "s@ //bin/wine @ $WINE_DIR/bin/wine64 @" $HOME/.local/share/applications/wine/Programs/Logos\ Bible\ Software.desktop
+        sed -i -e "s@ //bin/wine @ ${WINE_DIR}/bin/wine64 @" $HOME/.local/share/applications/wine/Programs/Logos\ Bible\ Software.desktop
 
         # Set Wine to winxp for Logos Usage
-        # WINEPREFIX=$PREFIX WINE="$WINE_DIR/bin/wine64" WINESERVER="$WINE_DIR/bin/wineserver" "$WINETRICKS_DIR/winetricks" -q winxp
+        # WINEPREFIX=$PREFIX WINE="${WINE_DIR}/bin/wine64" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" -q winxp
 
         zenity --info $ZENITY_SETTINGS \
             --title="wasta-logos64-setup: Complete" \
