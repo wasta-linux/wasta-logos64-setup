@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Configure Logos 64bit Wine
+Comment=Change Logos 64bit Wine configuration options
+Exec=sh -c "WINEPREFIX=\\$HOME/.wine-logos64/ WINEARCH=win64 WINESERVER=/opt/wasta-wine64/bin/wineserver WINE=/opt/wasta-wine64/bin/wine64 /opt/wasta-winetricks/winetricks winecfg"
+Terminal=false
+Icon=wine-winecfg
+Type=Application
+Categories=Wine;
+StartupWMClass=winecfg.exe
