@@ -308,7 +308,7 @@ else
         exit 0
     fi
 fi
-
+echo "Prefix setup complete."
 if [[ -d "$PREFIX" ]]; then
     INSTALL_FILE=""
     if [[ -e "$DOWNLOAD_DIR/Logos-x64.msi" ]]; then
@@ -328,7 +328,8 @@ The recommended method is to install the <i>'wasta-logos64-installer'</i> packag
     echo
 
     if [[ "$INSTALL_FILE" ]]; then
-        # Make Winecfg launcher available for user
+        # Make Winecfg launcher available for user.
+        mkdir -p $HOME/.local/share/applications
         cp $DIR/resources/wine-logos64-winecfg.desktop $HOME/.local/share/applications/
 
         # Set Wine to win7 for Logos install
