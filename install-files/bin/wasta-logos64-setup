@@ -136,7 +136,7 @@ setupPrefix () {
         fi
 
         # Ensure that wineserver finishes.
-        wait_for_wineserver "${PREFIX}"
+        wait_for_wineserver "${WINEPREFIX}"
     done
 
     cleanupPrefix
@@ -160,7 +160,7 @@ cleanupPrefix () {
     # note: grep --null returns null separated list to handle space in filenames
     # note: xargs -0 to handle null separated items
     if [[ -d "$HOME/.local/share/applications" ]]; then
-        grep -r -l --null "$PREFIX" "$HOME/.local/share/applications" \
+        grep -r -l --null "$WINEPREFIX" "$HOME/.local/share/applications" \
             | xargs -0 rm >/dev/null 2>&1
     fi
 }
@@ -279,22 +279,22 @@ fi
 # ------------------------------------------------------------------------------
 # Setup Logos Prefix and install Logos
 # ------------------------------------------------------------------------------
-if [[ -d "$PREFIX" ]]; then
-    # Wine PREFIX exists, ask user if they want to overwrite it or update it.
+if [[ -d "$WINEPREFIX" ]]; then
+    # WINEPREFIX exists, ask user if they want to overwrite it or update it.
     zenity --question $ZENITY_SETTINGS \
         --title="wasta-logos64-setup" \
         --text="<b>Remove existing Logos 64bit Wine Prefix?</b>\n
-<i>The folder <u>'$PREFIX'</u> already exists. Do you want to
+<i>The folder <u>'$WINEPREFIX'</u> already exists. Do you want to
 delete it in order to re-setup a new Logos 64bit Wine Prefix?</i>\n"
 
     if [ "$?" -eq 0 ];
     then
-        # Remove PREFIX.
-        rm -rf $PREFIX
+        # Remove WINEPREFIX.
+        rm -rf $WINEPREFIX
     fi
     setupPrefix
 else
-    # No Wine PREFIX: prompt user.
+    # No WINEPREFIX: prompt user.
     zenity --question $ZENITY_SETTINGS \
         --title="wasta-logos64-setup" \
         --text="<b>Setup Logos 64bit Wine Prefix?</b>\n
@@ -302,14 +302,14 @@ else
 
     if [ "$?" -eq 0 ];
     then
-        # User said yes: setup PREFIX.
+        # User said yes: setup WINEPREFIX.
         setupPrefix
     else
         exit 0
     fi
 fi
 echo "Prefix setup complete."
-if [[ -d "$PREFIX" ]]; then
+if [[ -d "$WINEPREFIX" ]]; then
     INSTALL_FILE=""
     if [[ -e "$DOWNLOAD_DIR/Logos-x64.msi" ]]; then
         INSTALL_FILE="$DOWNLOAD_DIR/Logos-x64.msi"
@@ -336,7 +336,7 @@ The recommended method is to install the <i>'wasta-logos64-installer'</i> packag
         # TODO: ferion doesn't change the Win type. Needs testing.
         # WINEPREFIX=$PREFIX WINE="${WINE_DIR}/bin/wine64" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" -q win7
 
-        WINEPREFIX=$PREFIX WINE="${WINE_DIR}/bin/wine64" "${WINE_DIR}/bin/msiexec" /i "$INSTALL_FILE"
+        "${WINE_DIR}/bin/msiexec" /i "$INSTALL_FILE"
         OUTNUM=$?
         if [[ "$OUTNUM" -ne 0 ]]; then
             # Some failure: exit
@@ -350,7 +350,7 @@ $INSTALL_FILE"
 
         # TODO: Verify that this fixes the need for the following sleep command.
         # Wait for wineserver to finish.
-        wait_for_wineserver "$PREFIX"
+        wait_for_wineserver "$WINEPREFIX"
         # not sure why but below edits to launcher were not getting applied
         #   with a message that the file wasn't found:
         #   Adding sleep to see if helps
