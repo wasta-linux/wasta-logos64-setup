@@ -84,7 +84,7 @@ setupPrefix () {
         --text="Setting up Wine Prefix... \n\n"
     # get zenity process id
     PID_ZENITY=$!
-    echo "wineboot "
+    echo "Finished wineboot."
 
     # get firstly created process id, which is running parallel to zenity
     PID_PROCESS=$(pgrep -o -P $$)
