@@ -76,7 +76,6 @@ setupPrefix () {
     # Initialize prefix.
     # Note: WINEDLLOVERRIDES was added to try to prevent mono and gecko prompts.
     #   But some users are having freezing issues so I am reverting this.
-    echo "Starting wineboot..."
     ${WINE_DIR}/bin/wine64 wineboot | zenity \
         --height=150 --width=450 --progress --pulsate --auto-close \
         --window-icon=$DIR/resources/wasta-linux.svg \
@@ -84,7 +83,6 @@ setupPrefix () {
         --text="Setting up Wine Prefix... \n\n" &
     # get zenity process id
     PID_ZENITY=$!
-    echo "Finished wineboot."
 
     # get firstly created process id, which is running parallel to zenity
     PID_PROCESS=$(pgrep -o -P $$)
@@ -119,7 +117,7 @@ setupPrefix () {
         "-q dotnet48" \
     )
     for i in "${installs[@]}"; do
-        WINEPREFIX=$PREFIX WINE="${WINE_DIR}/bin/wine64" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" $i | zenity \
+        "$WINETRICKS_DIR/winetricks" $i | zenity \
             --height=150 --width=450 --progress --pulsate --auto-close \
             --window-icon=$DIR/resources/wasta-linux.svg \
             --title="Installing $i" \
@@ -168,6 +166,8 @@ cleanupPrefix () {
 }
 
 progressCheck () {
+    PID_ZENITY="$1"
+    PID_PROCESS="$2"
     ### Check on process launched in parallel with zenity.
     ###     If zenity is canceled, then kill process.
 
