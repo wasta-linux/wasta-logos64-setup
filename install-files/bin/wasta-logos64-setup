@@ -111,12 +111,13 @@ setupPrefix () {
     # - SetDirectDrawRender to GDI solves graphical glitching of various menus,
     #   etc disappearing / reappearing)
     installs=( \
-        "-q corefonts" \
-        "-q ddr=gdi" \
-        "-q settings fontsmooth=rgb" \
-        "-q dotnet48" \
+        "corefonts" \
+        "ddr=gdi" \
+        "settings fontsmooth=rgb" \
+        "dotnet48" \
     )
     for i in "${installs[@]}"; do
+        echo "Installing $i..."
         "$WINETRICKS_DIR/winetricks" $i | zenity \
             --height=150 --width=450 --progress --pulsate --auto-close \
             --window-icon=$DIR/resources/wasta-linux.svg \
