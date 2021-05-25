@@ -210,10 +210,10 @@ wait_for_wineserver() {
 
     if [[ -d ${1} ]]; then
         # Directory passed. Wait for it to be free before continuing.
-        wait_for_process_using_dir "${1}"
+        wait_for_process_using_dir "${1}" | zenity --progress --title="Waiting for $WINELOADER proper end" --text="Waiting for $WINELOADER to end properly..." --pulsate --auto-close --no-cancel
     fi
 	echo "* Waiting for wine64 to end properly..."
-	"${WINE_DIR}/bin/wineserver" -w | zenity --progress --title="Waiting ${WINE_DIR}/bin/wine64 proper end" --text="Waiting for ${WINE_DIR}/bin/wine64 to end properly..." --pulsate --auto-close --no-cancel
+	"${WINE_DIR}/bin/wineserver" -w | zenity --progress --title="Waiting for $WINELOADER proper end" --text="Waiting for $WINELOADER to end properly..." --pulsate --auto-close --no-cancel
 }
 
 wait_for_process_using_dir() {
