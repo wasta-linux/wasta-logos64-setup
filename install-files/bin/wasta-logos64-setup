@@ -81,7 +81,7 @@ setupPrefix () {
         --height=150 --width=450 --progress --pulsate --auto-close \
         --window-icon=$DIR/resources/wasta-linux.svg \
         --title="Setting up Wine Prefix" \
-        --text="Setting up Wine Prefix... \n\n"
+        --text="Setting up Wine Prefix... \n\n" &
     # get zenity process id
     PID_ZENITY=$!
     echo "Finished wineboot."
