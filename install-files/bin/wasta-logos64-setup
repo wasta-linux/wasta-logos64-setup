@@ -36,6 +36,8 @@ fi
 # ------------------------------------------------------------------------------
 # Set global variables.
 # ------------------------------------------------------------------------------
+# TODO: export WINE variables to avoid having to put them in each command?
+
 # Directories
 WINE_DIR=/opt/wasta-wine64
 WINETRICKS_DIR=/opt/wasta-winetricks
@@ -65,7 +67,7 @@ setupPrefix () {
     # Initialize prefix.
     # Note: WINEDLLOVERRIDES was added to try to prevent mono and gecko prompts.
     #   But some users are having freezing issues so I am reverting this.
-    WINEPREFIX=$PREFIX WINEARCH=win64 WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe=" ${WINE_DIR}/bin/wineboot | zenity \
+    WINEPREFIX=$PREFIX WINEARCH=win64 WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe=" ${WINE_DIR}/bin/wine64 wineboot | zenity \
         --height=150 --width=450 --progress --pulsate --auto-close \
         --window-icon=$DIR/resources/wasta-linux.svg \
         --title="Setting up Wine Prefix" \
