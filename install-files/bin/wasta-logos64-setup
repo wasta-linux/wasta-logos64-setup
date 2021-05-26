@@ -295,14 +295,15 @@ wine_reg_install() {
 }
 
 winetricks_install() {
-    echo "Running winetricks $i..."
+    part="$1"
+    echo "Running winetricks $part..."
 
     # TODO: This "hides" any winetricks output. Maybe not a problem if
     #   everything goes right?
-    "$WINETRICKS_EXE" -q $i | zenity $ZENITY_SETTINGS \
+    "$WINETRICKS_EXE" -q $part | zenity $ZENITY_SETTINGS \
         --progress --pulsate --auto-close \
         --title="Installing with winetricks" \
-        --text="Running \"winetricks $i\"... \n\n" &
+        --text="Running \"winetricks $part\"... \n\n" &
 
     # Get zenity process id.
     PID_ZENITY=$!
@@ -313,47 +314,55 @@ winetricks_install() {
     progressCheck $PID_ZENITY $PID_PROCESS
     if [ "$?" -eq 99 ]; then
         # Zenity canceled, winetricks install didn't complete.
-        errorExit "<b>$i install in Logos Wine Prefix failed!</b>"
+        errorExit "<b>$part install in Logos Wine Prefix failed!</b>"
     fi
 
-    # The following is ferion11's method, for reference:
-    # # Make pipe for zenity input.
-    # pipe_winetricks="$(mktemp)"
-    # rm -rf "$pipe_winetricks"
-    # mkfifo "$pipe_winetricks"
-    #
-    # # zenity GUI feedback
-    # zenity --progress --title="Installing with winetricks $i" \
-    #     --text="Installing with winetricks $i" --pulsate --auto-close \
-    #     --window-icon=$DIR/resources/wasta-linux.svg \
-    #     --height=150 --width=450 < "$pipe_winetricks" &
-    # # Get zenity process id.
-    # PID_ZENITY="${!}"
-    #
-    # "$WINETRICKS_DIR/winetricks" -q $i | tee "$pipe_winetricks"
-    # EC_WINETRICKS=$?
-    #
-    # wait "$PID_ZENITY"
-    # EC_ZENITY=$?
-    #
-    # rm -rf "$pipe_winetricks"
-    #
-    # # NOTE: sometimes the process finishes before the wait command, giving the error code 127
-    # if [ "$EC_ZENITY" == "0" ] || [ "$EC_ZENITY" == "127" ] ; then
-    # 	if [ "$EC_WINETRICKS" != "0" ] ; then
-    # 		wineserver -k
-    # 		echo "ERROR on : winetricks $i; EC_WINETRICKS: $EC_WINETRICKS"
-    # 		gtk_fatal_error "The installation was cancelled because of sub-job failure!\n * winetricks ${*}\n  - WINETRICKS_STATUS: ${WINETRICKS_STATUS}"
-    # 	fi
-    # else
-    # 	wineserver -k
-    # 	gtk_fatal_error "The installation was cancelled!\n * ZENITY_RETURN: ${ZENITY_RETURN}"
-    # fi
-
     # Ensure that wineserver finishes.
-    wait_for_wineserver "${WINEPREFIX}"
+    wait_for_wineserver "$WINEPREFIX"
 }
 
+alt_winetricks_install() {
+    # The following is ferion11's method, for reference:
+    part="$1"
+    # Make pipe for zenity input.
+    pipe_winetricks="$(mktemp)"
+    rm -rf "$pipe_winetricks"
+    mkfifo "$pipe_winetricks"
+
+    # zenity GUI feedback
+    zenity $ZENITY_SETTINGS \
+        --progress --title="Installing with winetricks $part" \
+        --text="Installing with winetricks $part" --pulsate --auto-close \
+        --window-icon=$DIR/resources/wasta-linux.svg \
+        --height=150 --width=450 < "$pipe_winetricks" &
+    # Get zenity process id.
+    PID_ZENITY="${!}"
+
+    "$WINETRICKS_DIR/winetricks" -q $part | tee "$pipe_winetricks"
+    EC_WINETRICKS=$?
+
+    wait "$PID_ZENITY"
+    EC_ZENITY=$?
+
+    rm -rf "$pipe_winetricks"
+
+    # NOTE: sometimes the process finishes before the wait command, giving the error code 127
+    if [ "$EC_ZENITY" == "0" ] || [ "$EC_ZENITY" == "127" ] ; then
+    	if [ "$EC_WINETRICKS" != "0" ] ; then
+    		wineserver -k
+    		echo "ERROR on : winetricks $part; EC_WINETRICKS: $EC_WINETRICKS"
+            exit 1
+    		# gtk_fatal_error "The installation was cancelled because of sub-job failure!\n * winetricks $part\n  - WINETRICKS_STATUS: ${WINETRICKS_STATUS}"
+    	fi
+    else
+    	wineserver -k
+        exit 1
+    	# gtk_fatal_error "The installation was cancelled!\n * ZENITY_RETURN: ${ZENITY_RETURN}"
+    fi
+
+    # Ensure that wineserver finishes.
+    wait_for_wineserver "$WINEPREFIX"
+}
 
 # ==============================================================================
 # Main Processing
