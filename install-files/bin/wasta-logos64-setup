@@ -275,7 +275,7 @@ wait_for_wineserver() {
         # wait_for_process_using_dir "${1}" | zenity --progress --title="Waiting for $WINELOADER proper end" --text="Waiting for $WINELOADER to end properly..." --pulsate --auto-close --no-cancel
     fi
 	echo "* Waiting for wine64 to end properly..."
-	"${WINE_DIR}/bin/wineserver" -w | zenity --progress --title="Waiting for $WINELOADER proper end" --text="Waiting for $WINELOADER to end properly..." --pulsate --auto-close --no-cancel
+	"$WINESERVER" -w | zenity --progress --title="Waiting for $WINELOADER proper end" --text="Waiting for $WINELOADER to end properly..." --pulsate --auto-close --no-cancel
 }
 
 wait_for_process_using_dir() {
@@ -397,7 +397,7 @@ The recommended method is to install the <i>'wasta-logos64-installer'</i> packag
 
         # Set Wine to win7 for Logos install
         # TODO: ferion doesn't change the Win type. Needs testing.
-        # WINEPREFIX=$PREFIX WINE="$WINELOADER" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" -q win7
+        # WINEPREFIX=$PREFIX WINE="$WINELOADER" WINESERVER="$WINESERVER" "$WINETRICKS_DIR/winetricks" -q win7
 
         "${WINE_DIR}/bin/msiexec" /i "$INSTALL_FILE"
         OUTNUM=$?
@@ -423,7 +423,7 @@ $INSTALL_FILE"
         sed -i -e "s@ //bin/wine @ $WINELOADER @" $HOME/.local/share/applications/wine/Programs/Logos\ Bible\ Software.desktop
 
         # Set Wine to winxp for Logos Usage
-        # WINEPREFIX=$PREFIX WINE="$WINELOADER" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" -q winxp
+        # WINEPREFIX=$PREFIX WINE="$WINELOADER" WINESERVER="$WINESERVER" "$WINETRICKS_DIR/winetricks" -q winxp
 
         zenity --info $ZENITY_SETTINGS \
             --title="wasta-logos64-setup: Complete" \
