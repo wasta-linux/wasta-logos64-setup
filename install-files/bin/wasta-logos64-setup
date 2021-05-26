@@ -36,14 +36,15 @@ fi
 # ------------------------------------------------------------------------------
 # Set global variables.
 # ------------------------------------------------------------------------------
-ZENITY_SETTINGS="--no-wrap --height=200 --width=500 --window-icon=$DIR/resources/wasta-linux.svg"
 
 # Directories
+DIR=/usr/share/wasta-logos64-setup
 WINE_DIR=/opt/wasta-wine64
 INSTALLER_DIR=/opt/wasta-logos64-installer
 DOWNLOAD_DIR="$(xdg-user-dir DOWNLOAD)"
-DIR=/usr/share/wasta-logos64-setup
 WINETRICKS_DIR=/opt/wasta-winetricks
+
+ZENITY_SETTINGS="--no-wrap --height=200 --width=500 --window-icon=$DIR/resources/wasta-linux.svg"
 
 # Executables
 WINELOADER="${WINE_DIR}/bin/wine64"
