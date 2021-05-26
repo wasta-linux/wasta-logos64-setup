@@ -36,10 +36,16 @@ fi
 # ------------------------------------------------------------------------------
 # Set global variables.
 # ------------------------------------------------------------------------------
-# TODO: export WINE variables to avoid having to put them in each command?
+ZENITY_SETTINGS="--no-wrap --height=200 --width=500 --window-icon=$DIR/resources/wasta-linux.svg"
 
 # Directories
 WINE_DIR=/opt/wasta-wine64
+INSTALLER_DIR=/opt/wasta-logos64-installer
+DOWNLOAD_DIR="$(xdg-user-dir DOWNLOAD)"
+DIR=/usr/share/wasta-logos64-setup
+WINETRICKS_DIR=/opt/wasta-winetricks
+
+# Executables
 WINELOADER="${WINE_DIR}/bin/wine64"
 if [[ ! -x "$WINELOADER" ]]; then
     echo "$WINELOADER not found."
@@ -52,14 +58,18 @@ if [[ ! -x "$WINELOADER" ]]; then
         exit 1
     fi
 fi
-export WINELOADER
-# WINE="$WINELOADER"
-# export WINE
-WINEARCH="win64"
-export WINEARCH
 WINESERVER="${WINE_DIR}/bin/wineserver"
-export WINESERVER
-WINETRICKS_DIR=/opt/wasta-winetricks
+if [[ ! -x "$WINESERVER" ]]; then
+    echo "$WINESERVER not found."
+    if [[ $(which msiexec) ]]; then
+        # Fallback to system msiexec.
+        WINESERVER=$(which msiexec)
+        echo "Falling back to $WINESERVER"
+    else
+        echo "No wineserver available!"
+        exit 1
+    fi
+fi
 WINETRICKS_EXE="${WINETRICKS_DIR}/winetricks"
 if [[ ! -x "$WINETRICKS_EXE" ]]; then
     echo "$WINETRICKS_EXE not found."
@@ -84,14 +94,13 @@ if [[ ! -x "$MSIEXEC" ]]; then
         exit 1
     fi
 fi
-INSTALLER_DIR=/opt/wasta-logos64-installer
-DOWNLOAD_DIR="$(xdg-user-dir DOWNLOAD)"
-DIR=/usr/share/wasta-logos64-setup
-WINEPREFIX=/home/$USER/.wine-logos64
-export WINEPREFIX
-WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe="
-export WINEDLLOVERRIDES
-ZENITY_SETTINGS="--no-wrap --height=200 --width=500 --window-icon=$DIR/resources/wasta-linux.svg"
+
+# Export WINE* variables to avoid having to use them explicitly.
+export WINEARCH="win64"
+export WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe="
+export WINELOADER
+export WINEPREFIX=/home/$USER/.wine-logos64
+export WINESERVER
 
 
 # ------------------------------------------------------------------------------
