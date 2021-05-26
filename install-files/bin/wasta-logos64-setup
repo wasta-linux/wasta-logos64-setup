@@ -295,7 +295,7 @@ wine_reg_install() {
 }
 
 winetricks_install() {
-    part="$1"
+    part="$@"
     echo "Running winetricks $part..."
 
     # TODO: This "hides" any winetricks output. Maybe not a problem if
