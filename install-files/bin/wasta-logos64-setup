@@ -100,7 +100,7 @@ setupPrefix () {
     # Initialize prefix.
     # Note: WINEDLLOVERRIDES was added to try to prevent mono and gecko prompts.
     #   But some users are having freezing issues so I am reverting this.
-    ${WINE_DIR}/bin/wine64 wineboot | zenity \
+    "$WINELOADER" wineboot | zenity \
         --height=150 --width=450 --progress --pulsate --auto-close \
         --window-icon=$DIR/resources/wasta-linux.svg \
         --title="Setting up Wine Prefix" \
@@ -315,11 +315,11 @@ wine_reg_install() {
     ### Install wine registry entries.
 
     REG_FILENAME="${1}"
-    echo "${WINE_DIR}/bin/wine64 regedit.exe ${REG_FILENAME}"
-    ${WINE_DIR}/bin/wine64 regedit.exe "${WORKDIR}"/"${REG_FILENAME}" | zenity --progress --title="Wine regedit" --text="Wine is installing ${REG_FILENAME} in ${WINEPREFIX}" --pulsate --auto-close --no-cancel
+    echo "$WINELOADER regedit.exe ${REG_FILENAME}"
+    "$WINELOADER" regedit.exe "${WORKDIR}"/"${REG_FILENAME}" | zenity --progress --title="Wine regedit" --text="Wine is installing ${REG_FILENAME} in ${WINEPREFIX}" --pulsate --auto-close --no-cancel
 
     wait_for_wineserver
-    echo "${WINE_DIR}/bin/wine64 regedit.exe ${REG_FILENAME} DONE!"
+    echo "$WINELOADER regedit.exe ${REG_FILENAME} DONE!"
 }
 
 
@@ -397,7 +397,7 @@ The recommended method is to install the <i>'wasta-logos64-installer'</i> packag
 
         # Set Wine to win7 for Logos install
         # TODO: ferion doesn't change the Win type. Needs testing.
-        # WINEPREFIX=$PREFIX WINE="${WINE_DIR}/bin/wine64" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" -q win7
+        # WINEPREFIX=$PREFIX WINE="$WINELOADER" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" -q win7
 
         "${WINE_DIR}/bin/msiexec" /i "$INSTALL_FILE"
         OUTNUM=$?
@@ -409,7 +409,7 @@ $INSTALL_FILE"
         fi
 
         # Set Wine to Vista for Logos indexer.
-        ${WINE_DIR}/bin/wine64 reg add "HKCU\\Software\\Wine\\AppDefaults\\LogosIndexer.exe" /v Version /t REG_SZ /d vista /f
+        "$WINELOADER" reg add "HKCU\\Software\\Wine\\AppDefaults\\LogosIndexer.exe" /v Version /t REG_SZ /d vista /f
 
         # TODO: Verify that this fixes the need for the following sleep command.
         # Wait for wineserver to finish.
@@ -420,10 +420,10 @@ $INSTALL_FILE"
         # sleep 2
 
         # point to specific version of wine to run Logos
-        sed -i -e "s@ //bin/wine @ ${WINE_DIR}/bin/wine64 @" $HOME/.local/share/applications/wine/Programs/Logos\ Bible\ Software.desktop
+        sed -i -e "s@ //bin/wine @ $WINELOADER @" $HOME/.local/share/applications/wine/Programs/Logos\ Bible\ Software.desktop
 
         # Set Wine to winxp for Logos Usage
-        # WINEPREFIX=$PREFIX WINE="${WINE_DIR}/bin/wine64" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" -q winxp
+        # WINEPREFIX=$PREFIX WINE="$WINELOADER" WINESERVER="${WINE_DIR}/bin/wineserver" "$WINETRICKS_DIR/winetricks" -q winxp
 
         zenity --info $ZENITY_SETTINGS \
             --title="wasta-logos64-setup: Complete" \
