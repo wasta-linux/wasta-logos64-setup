@@ -295,15 +295,15 @@ wine_reg_install() {
 }
 
 winetricks_install() {
-    part="$@"
-    echo "Running winetricks $part..."
+    parts="$@"
+    echo "Running winetricks $parts..."
 
     # TODO: This "hides" any winetricks output. Maybe not a problem if
     #   everything goes right?
-    "$WINETRICKS_EXE" -q $part | zenity $ZENITY_SETTINGS \
+    "$WINETRICKS_EXE" -q $parts | zenity $ZENITY_SETTINGS \
         --progress --pulsate --auto-close \
         --title="Installing with winetricks" \
-        --text="Running \"winetricks $part\"... \n\n" &
+        --text="Running \"winetricks $parts\"... \n\n" &
 
     # Get zenity process id.
     PID_ZENITY=$!
@@ -314,7 +314,7 @@ winetricks_install() {
     progressCheck $PID_ZENITY $PID_PROCESS
     if [ "$?" -eq 99 ]; then
         # Zenity canceled, winetricks install didn't complete.
-        errorExit "<b>$part install in Logos Wine Prefix failed!</b>"
+        errorExit "<b>$parts install in Logos Wine Prefix failed!</b>"
     fi
 
     # Ensure that wineserver finishes.
@@ -323,7 +323,7 @@ winetricks_install() {
 
 alt_winetricks_install() {
     # The following is ferion11's method, for reference:
-    part="$1"
+    parts="$@"
     # Make pipe for zenity input.
     pipe_winetricks="$(mktemp)"
     rm -rf "$pipe_winetricks"
@@ -331,14 +331,14 @@ alt_winetricks_install() {
 
     # zenity GUI feedback
     zenity $ZENITY_SETTINGS \
-        --progress --title="Installing with winetricks $part" \
-        --text="Installing with winetricks $part" --pulsate --auto-close \
+        --progress --title="Installing with winetricks $parts" \
+        --text="Installing with winetricks $parts" --pulsate --auto-close \
         --window-icon=$DIR/resources/wasta-linux.svg \
         --height=150 --width=450 < "$pipe_winetricks" &
     # Get zenity process id.
     PID_ZENITY="${!}"
 
-    "$WINETRICKS_DIR/winetricks" -q $part | tee "$pipe_winetricks"
+    "$WINETRICKS_DIR/winetricks" -q $parts | tee "$pipe_winetricks"
     EC_WINETRICKS=$?
 
     wait "$PID_ZENITY"
@@ -350,9 +350,9 @@ alt_winetricks_install() {
     if [ "$EC_ZENITY" == "0" ] || [ "$EC_ZENITY" == "127" ] ; then
     	if [ "$EC_WINETRICKS" != "0" ] ; then
     		wineserver -k
-    		echo "ERROR on : winetricks $part; EC_WINETRICKS: $EC_WINETRICKS"
+    		echo "ERROR on : winetricks $parts; EC_WINETRICKS: $EC_WINETRICKS"
             exit 1
-    		# gtk_fatal_error "The installation was cancelled because of sub-job failure!\n * winetricks $part\n  - WINETRICKS_STATUS: ${WINETRICKS_STATUS}"
+    		# gtk_fatal_error "The installation was cancelled because of sub-job failure!\n * winetricks $parts\n  - WINETRICKS_STATUS: ${WINETRICKS_STATUS}"
     	fi
     else
     	wineserver -k
