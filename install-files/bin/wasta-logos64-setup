@@ -43,8 +43,12 @@ WINE_DIR=/opt/wasta-wine64
 INSTALLER_DIR=/opt/wasta-logos64-installer
 DOWNLOAD_DIR="$(xdg-user-dir DOWNLOAD)"
 WINETRICKS_DIR=/opt/wasta-winetricks
-
-ZENITY_SETTINGS="--no-wrap --height=200 --width=500 --window-icon=$DIR/resources/wasta-linux.svg"
+icon="$DIR/resources/wasta-linux.svg"
+window_icon="--window-icon=$icon"
+if [[ ! -e "$icon" ]]; then
+    window_icon=''
+fi
+ZENITY_SETTINGS="--no-wrap --height=200 --width=500 $window_icon"
 
 # Executables
 WINELOADER="${WINE_DIR}/bin/wine64"
