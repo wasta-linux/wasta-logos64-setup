@@ -41,14 +41,36 @@ fi
 # Directories
 WINE_DIR=/opt/wasta-wine64
 WINELOADER="${WINE_DIR}/bin/wine64"
+if [[ ! -x "$WINELOADER" ]]; then
+    echo "$WINELOADER not found."
+    if [[ $(which wine64) ]]; then
+        # Fallback to system wine64.
+        WINELOADER=$(which wine64)
+        echo "Falling back to $WINELOADER"
+    else
+        echo "No wine64 available!"
+    fi
+fi
 export WINELOADER
-WINE="$WINELOADER"
-export WINE
+# WINE="$WINELOADER"
+# export WINE
 WINEARCH="win64"
 export WINEARCH
 WINESERVER="${WINE_DIR}/bin/wineserver"
 export WINESERVER
 WINETRICKS_DIR=/opt/wasta-winetricks
+WINETRICKS_EXE="${WINETRICKS_DIR}/winetricks"
+if [[ ! -x "$WINETRICKS_EXE" ]]; then
+    echo "$WINETRICKS_EXE not found."
+    if [[ $(which winetricks) ]]; then
+        # Fallback to system winetricks.
+        WINETRICKS_EXE=$(which winetricks)
+        echo "Falling back to $WINETRICKS_EXE"
+    else
+        echo "No winetricks available!"
+        exit 1
+    fi
+fi
 INSTALLER_DIR=/opt/wasta-logos64-installer
 DOWNLOAD_DIR="$(xdg-user-dir DOWNLOAD)"
 DIR=/usr/share/wasta-logos64-setup
@@ -123,7 +145,7 @@ setupPrefix () {
 
         # TODO: This "hides" any winetricks output. Maybe not a problem if
         #   everything goes right?
-        "$WINETRICKS_DIR/winetricks" -q $i | zenity \
+        "$WINETRICKS_EXE" -q $i | zenity \
             --height=150 --width=450 --progress --pulsate --auto-close \
             --window-icon=$DIR/resources/wasta-linux.svg \
             --title="Installing with winetricks" \
