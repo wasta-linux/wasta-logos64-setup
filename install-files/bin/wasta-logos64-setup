@@ -45,8 +45,7 @@ DOWNLOAD_DIR="$(xdg-user-dir DOWNLOAD)"
 WINETRICKS_DIR=/opt/wasta-winetricks
 
 # Zenity settings.
-ZENITY_ICON="--window-icon=$DIR/resources/wasta-linux.svg"
-ZENITY_SETTINGS="--no-wrap --height=200 --width=500"
+ZENITY_SETTINGS="--height=200 --width=500 --window-icon=$DIR/resources/wasta-linux.svg"
 
 # Executables
 WINELOADER="${WINE_DIR}/bin/wine64"
@@ -360,7 +359,7 @@ wine_reg_install() {
 # Main Processing
 # ==============================================================================
 
-zenity $ZENITY_SETTINGS \
+zenity $ZENITY_SETTINGS --no-wrap \
     --question --title="wasta-logos64-setup" \
     --text="<b>Do you want to install Logos (64bit) using Wine?</b>\n
 <b>Processing Summary:</b>
@@ -378,7 +377,7 @@ fi
 # Ensure that prefix is setup.
 if [[ -d "$WINEPREFIX" ]]; then
     # WINEPREFIX exists, ask user if they want to overwrite it or update it.
-    zenity $ZENITY_SETTINGS \
+    zenity $ZENITY_SETTINGS --no-wrap \
         --question --title="wasta-logos64-setup" \
         --text="<b>Remove existing Logos 64bit Wine Prefix?</b>\n
 <i>The folder <u>'$WINEPREFIX'</u> already exists. Do you want to
@@ -392,7 +391,7 @@ delete it in order to re-setup a new Logos 64bit Wine Prefix?</i>\n"
     setupPrefix
 else
     # No WINEPREFIX: prompt user.
-    zenity $ZENITY_SETTINGS \
+    zenity $ZENITY_SETTINGS --no-wrap \
         --question --title="wasta-logos64-setup" \
         --text="<b>Setup Logos 64bit Wine Prefix?</b>\n
 <i>Do you want to setup a new Logos 64bit Wine Prefix?</i>\n"
@@ -465,7 +464,7 @@ $INSTALL_FILE"
         fi
 
         # Final zenity window.
-        zenity $ZENITY_SETTINGS \
+        zenity $ZENITY_SETTINGS --no-wrap \
             --info --title="wasta-logos64-setup: Complete" \
             --text="<b>Logos 64bit setup complete!</b>\n
 <i>Find 'Logos Bible Software' in the <u>Main Menu</u>
