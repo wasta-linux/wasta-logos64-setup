@@ -119,12 +119,12 @@ setupPrefix () {
         "dotnet48" \
     )
     for i in "${installs[@]}"; do
-        echo "Installing $i..."
-        "$WINETRICKS_DIR/winetricks" $i | zenity \
+        echo "Running winetricks $i..."
+        "$WINETRICKS_DIR/winetricks" -q $i | zenity \
             --height=150 --width=450 --progress --pulsate --auto-close \
             --window-icon=$DIR/resources/wasta-linux.svg \
-            --title="Installing $i" \
-            --text="Installing $i... \n\n" &
+            --title="Installing with winetricks" \
+            --text="winetricks $i... \n\n" &
 
         # Get zenity process id.
         PID_ZENITY="${!}"
