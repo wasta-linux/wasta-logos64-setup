@@ -63,7 +63,7 @@ if [[ ! -x "$WINESERVER" ]]; then
     echo "$WINESERVER not found."
     if [[ $(which msiexec) ]]; then
         # Fallback to system msiexec.
-        WINESERVER=$(which msiexec)
+        WINESERVER=$(which wineserver)
         echo "Falling back to $WINESERVER"
     else
         echo "No wineserver available!"
