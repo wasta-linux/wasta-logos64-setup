@@ -90,12 +90,13 @@ setupPrefix () {
     cleanupPrefix
 
     # Copy in winetricks cache.
-    mkdir -p $HOME/.cache/winetricks
-    rsync -av $WINETRICKS_DIR/winetricks-cache/ $HOME/.cache/winetricks/ | tee >(zenity \
-        --height=150 --width=450 --progress --pulsate --auto-close \
-        --window-icon=$DIR/resources/wasta-linux.svg \
-        --title="Copying Winetricks Cache" \
-        --text="Copying Winetricks Cache... \n\n")
+    if [[ -d $WINETRICKS_DIR ]] && [[ -d $HOME/.cache/winetricks/ ]]; then
+        rsync -av $WINETRICKS_DIR/winetricks-cache/ $HOME/.cache/winetricks/ | tee >(zenity \
+            --height=150 --width=450 --progress --pulsate --auto-close \
+            --window-icon=$DIR/resources/wasta-linux.svg \
+            --title="Copying Winetricks Cache" \
+            --text="Copying Winetricks Cache... \n\n")
+    fi
 
     # Initialize prefix.
     # Note: WINEDLLOVERRIDES was added to try to prevent mono and gecko prompts.
