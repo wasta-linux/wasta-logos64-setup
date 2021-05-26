@@ -98,6 +98,7 @@ if [[ ! -x "$MSIEXEC" ]]; then
 fi
 
 # Export WINE* variables to avoid having to use them explicitly.
+export WINE="$WINELOADER" # needed for winetricks?
 export WINEARCH="win64"
 # Note: WINEDLLOVERRIDES was added to try to prevent mono and gecko prompts.
 #   But some users are having freezing issues so I am reverting this.
