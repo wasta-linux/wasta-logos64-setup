@@ -49,6 +49,7 @@ if [[ ! -x "$WINELOADER" ]]; then
         echo "Falling back to $WINELOADER"
     else
         echo "No wine64 available!"
+        exit 1
     fi
 fi
 export WINELOADER
@@ -68,6 +69,18 @@ if [[ ! -x "$WINETRICKS_EXE" ]]; then
         echo "Falling back to $WINETRICKS_EXE"
     else
         echo "No winetricks available!"
+        exit 1
+    fi
+fi
+MSIEXEC="${WINE_DIR}/bin/msiexec"
+if [[ ! -x "$MSIEXEC" ]]; then
+    echo "$MSIEXEC not found."
+    if [[ $(which msiexec) ]]; then
+        # Fallback to system msiexec.
+        MSIEXEC=$(which msiexec)
+        echo "Falling back to $MSIEXEC"
+    else
+        echo "No msiexec available!"
         exit 1
     fi
 fi
@@ -400,7 +413,7 @@ The recommended method is to install the <i>'wasta-logos64-installer'</i> packag
         # TODO: ferion doesn't change the Win type. Needs testing.
         # WINEPREFIX=$PREFIX WINE="$WINELOADER" WINESERVER="$WINESERVER" "$WINETRICKS_DIR/winetricks" -q win7
 
-        "${WINE_DIR}/bin/msiexec" /i "$INSTALL_FILE"
+        "$MSIEXEC" /i "$INSTALL_FILE"
         OUTNUM=$?
         if [[ "$OUTNUM" -ne 0 ]]; then
             # Some failure: exit
