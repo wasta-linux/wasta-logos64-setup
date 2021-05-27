@@ -204,7 +204,9 @@ errorExit () {
 <i>wasta-logos64-setup will now exit.</i>" >/dev/null 2>&1
 
     # Ensure all wine processes are killed.
-    wineserver -k
+    echo "$(date +'%F %T'): wineserver -k" >> "$STDERR_LOG"
+    wineserver -k >> "$STDERR_LOG"
+    echo "$(date +'%F %T'): Exit on error." >> "$STDERR_LOG"
     exit 1
 }
 
@@ -348,6 +350,8 @@ winetricks_install() {
         # Zenity canceled, winetricks install didn't complete.
         errorExit "<b>$parts install in Logos Wine Prefix failed!</b>"
     fi
+
+    echo "$(date +'%F %T'): End of $WINETRICKS_EXE -q $parts" >> "$STDERR_LOG"
 
     # Ensure that wineserver finishes.
     wait_for_wineserver "$WINEPREFIX"
@@ -527,4 +531,5 @@ zenity $ZENITY_SETTINGS --no-wrap \
 <i>Find 'Logos Bible Software' in the <u>Main Menu</u>
 under the <u>'Education'</u> category</i>"
 
+echo "$(date +'%F %T'): End of wasta-logos64-setup." >> "$STDERR_LOG"
 exit 0
