@@ -316,7 +316,7 @@ wine_reg_install() {
 winetricks_install() {
     parts="$@"
     echo "Running winetricks $parts..."
-
+    start=$(date +%s)
     # TODO: This "hides" any winetricks output. Maybe not a problem if
     #   everything goes right?
     "$WINETRICKS_EXE" -q $parts | zenity $ZENITY_SETTINGS \
@@ -338,6 +338,9 @@ winetricks_install() {
 
     # Ensure that wineserver finishes.
     wait_for_wineserver "$WINEPREFIX"
+    end=$(date +%s)
+    duration=$(($end - $start))
+    echo "Completed in $duration seconds."
 }
 
 alt_winetricks_install() {
