@@ -147,6 +147,7 @@ setupPrefix () {
     # Initialize prefix.
     echo "Setting up wine prefix $WINEPREFIX..."
     mkdir -p "$WINEPREFIX"
+    date +'%F %T' >> "$STDERR_LOG"
     "$WINELOADER" wineboot 2>> "$STDERR_LOG" | zenity $ZENITY_SETTINGS \
         --progress --pulsate --auto-close \
         --title="Setting up Wine Prefix" \
@@ -264,6 +265,7 @@ wait_for_wineserver() {
         # wait_for_process_using_dir "${1}" | zenity --progress --title="Waiting for $WINELOADER proper end" --text="Waiting for $WINELOADER to end properly..." --pulsate --auto-close --no-cancel
     fi
 	echo "Waiting for wine64 to end properly..."
+    date +'%F %T' >> "$STDERR_LOG"
 	"$WINESERVER" -w 2>> "$STDERR_LOG" | zenity $ZENITY_SETTINGS \
         --progress --title="Waiting for $WINELOADER proper end" \
         --text="Waiting for $WINELOADER to end properly..." \
@@ -308,6 +310,7 @@ wine_reg_install() {
 
     REG_FILENAME="${1}"
     echo "$WINELOADER regedit.exe ${REG_FILENAME}"
+    date +'%F %T' >> "$STDERR_LOG"
     "$WINELOADER" regedit.exe "${WORKDIR}"/"${REG_FILENAME}" 2>> "$STDERR_LOG" \
         | zenity $ZENITY_SETTINGS \
         --progress --title="Wine regedit" \
@@ -325,6 +328,7 @@ winetricks_install() {
     start=$(date +%s)
     # TODO: This "hides" any winetricks output. Maybe not a problem if
     #   everything goes right?
+    date +'%F %T' >> "$STDERR_LOG"
     "$WINETRICKS_EXE" -q $parts 2>> "$STDERR_LOG" | zenity $ZENITY_SETTINGS \
         --progress --pulsate --auto-close \
         --title="Installing with winetricks" \
@@ -367,6 +371,7 @@ alt_winetricks_install() {
     # Get zenity process id.
     PID_ZENITY="${!}"
 
+    date +'%F %T' >> "$STDERR_LOG"
     "$WINETRICKS_DIR/winetricks" -q $parts 2>> "$STDERR_LOG" | tee "$pipe_winetricks"
     EC_WINETRICKS=$?
 
@@ -469,6 +474,7 @@ echo "*** Logos installation file: $INSTALL_FILE"
 echo
 
 # Start Logos installer.
+date +'%F %T' >> "$STDERR_LOG"
 "$MSIEXEC" /i "$INSTALL_FILE" 2>> "$STDERR_LOG"
 OUTNUM=$?
 if [[ "$OUTNUM" -ne 0 ]]; then
@@ -479,6 +485,7 @@ $INSTALL_FILE"
 fi
 
 # Set Wine to Vista for Logos indexer.
+date +'%F %T' >> "$STDERR_LOG"
 "$WINELOADER" reg add "HKCU\\Software\\Wine\\AppDefaults\\LogosIndexer.exe" \
     /v Version /t REG_SZ /d vista /f 2>> "$STDERR_LOG"
 # Wait for wineserver to finish.
