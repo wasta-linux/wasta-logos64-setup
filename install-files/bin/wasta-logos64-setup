@@ -331,7 +331,7 @@ winetricks_install() {
     start=$(date +%s)
     # TODO: This "hides" any winetricks output. Maybe not a problem if
     #   everything goes right?
-    echo "$(date +'%F %T') $WINETRICKS_EXE -q $parts" >> "$STDERR_LOG"
+    echo "$(date +'%F %T'): $WINETRICKS_EXE -q $parts" >> "$STDERR_LOG"
     "$WINETRICKS_EXE" -q $parts 2>> "$STDERR_LOG" | zenity $ZENITY_SETTINGS \
         --progress --pulsate --auto-close \
         --title="Installing with winetricks" \
