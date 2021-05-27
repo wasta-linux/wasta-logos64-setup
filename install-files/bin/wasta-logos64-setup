@@ -315,8 +315,8 @@ wine_reg_install() {
 
     REG_FILENAME="${1}"
     echo "$WINELOADER regedit.exe ${REG_FILENAME}"
-    echo "$(date +'%F %T'): $WINELOADER regedit.exe ${WORKDIR}"/"${REG_FILENAME}" >> "$STDERR_LOG"
-    "$WINELOADER" regedit.exe "${WORKDIR}"/"${REG_FILENAME}" 2>> "$STDERR_LOG" \
+    echo "$(date +'%F %T'): $WINELOADER regedit.exe ${REG_FILENAME}" >> "$STDERR_LOG"
+    "$WINELOADER" regedit.exe "${REG_FILENAME}" 2>> "$STDERR_LOG" \
         | zenity $ZENITY_SETTINGS \
         --progress --title="Wine regedit" \
         --text="Wine is installing ${REG_FILENAME} in ${WINEPREFIX}" \
@@ -492,8 +492,7 @@ $INSTALL_FILE"
 fi
 
 # Set Wine to Vista for Logos indexer.
-echo "$(date +'%F %T'): $WINELOADER reg add HKCU\\Software\\Wine\\AppDefaults\\LogosIndexer.exe \
-    /v Version /t REG_SZ /d vista /f" >> "$STDERR_LOG"
+echo "$(date +'%F %T'): $WINELOADER reg add HKCU\\Software\\Wine\\AppDefaults\\LogosIndexer.exe /v Version /t REG_SZ /d vista /f" >> "$STDERR_LOG"
 "$WINELOADER" reg add "HKCU\\Software\\Wine\\AppDefaults\\LogosIndexer.exe" \
     /v Version /t REG_SZ /d vista /f 2>> "$STDERR_LOG"
 # Wait for wineserver to finish.
