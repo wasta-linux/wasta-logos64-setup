@@ -315,7 +315,7 @@ wine_reg_install() {
 
 winetricks_install() {
     parts="$@"
-    echo "Running winetricks $parts..."
+    echo "Running \"winetricks $parts\"..."
     start=$(date +%s)
     # TODO: This "hides" any winetricks output. Maybe not a problem if
     #   everything goes right?
@@ -340,7 +340,7 @@ winetricks_install() {
     wait_for_wineserver "$WINEPREFIX"
     end=$(date +%s)
     duration=$(($end - $start))
-    echo "Completed in $duration seconds."
+    echo "Completed \"winetricks $parts\" in $duration seconds."
 }
 
 alt_winetricks_install() {
@@ -510,6 +510,5 @@ zenity $ZENITY_SETTINGS --no-wrap \
     --text="<b>Logos 64bit setup complete!</b>\n
 <i>Find 'Logos Bible Software' in the <u>Main Menu</u>
 under the <u>'Wine'</u> category</i>"
-fi
 
 exit 0
