@@ -273,7 +273,7 @@ wait_for_wineserver() {
     echo "$(date +'%F %T'): $WINESERVER -w" >> "$STDERR_LOG"
 	"$WINESERVER" -w 2>> "$STDERR_LOG" | zenity $ZENITY_SETTINGS \
         --progress --title="Waiting for $WINELOADER proper end" \
-        --text="Waiting for $WINELOADER to end properly..." \
+        --text="Waiting for $WINELOADER to end properly... \n\n" \
         --pulsate --auto-close --no-cancel
 }
 
