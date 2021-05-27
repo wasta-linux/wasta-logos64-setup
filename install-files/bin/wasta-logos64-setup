@@ -162,9 +162,9 @@ setupPrefix () {
     # Make registry changes.
     # NOTE: The following is done with WINEDLLOVERRIDES above, but it also
     #   results in numerous winemenubuilder.exe module not found errors.
-    # wine_reg_install "${DIR}/data/disable-winemenubuilder.reg"
+    # wine_reg_install "${DIR}/resources/disable-winemenubuilder.reg"
     # NOTE: The following is installed with winetricks below.
-    # wine_reg_install "${DIR}/data/renderer_gdi.reg"
+    # wine_reg_install "${DIR}/resources/renderer_gdi.reg"
 
     # Install helpful packages and settings.
     # NOTES:
