@@ -108,6 +108,9 @@ export WINELOADER
 export WINEPREFIX=/home/$USER/.wine-logos64
 export WINESERVER
 
+# Define wine-type stderr log for possible review.
+STDERR_LOG="${WINEPREFIX}/wasta-logos64-setup-wine-errors.log"
+
 # Ensure minimum wine version before continuing.
 full_version=$($WINELOADER --version)
 num_version=$(echo "$full_version" | awk '{print $1}' | awk -F'-' '{print $2}')
@@ -143,7 +146,7 @@ setupPrefix () {
 
     # Initialize prefix.
     echo "Setting up wine prefix $WINEPREFIX..."
-    "$WINELOADER" wineboot | zenity $ZENITY_SETTINGS \
+    "$WINELOADER" wineboot 2>> "$STDERR_LOG" | zenity $ZENITY_SETTINGS \
         --progress --pulsate --auto-close \
         --title="Setting up Wine Prefix" \
         --text="Setting up Wine Prefix... \n\n" &
@@ -260,7 +263,7 @@ wait_for_wineserver() {
         # wait_for_process_using_dir "${1}" | zenity --progress --title="Waiting for $WINELOADER proper end" --text="Waiting for $WINELOADER to end properly..." --pulsate --auto-close --no-cancel
     fi
 	echo "Waiting for wine64 to end properly..."
-	"$WINESERVER" -w | zenity $ZENITY_SETTINGS \
+	"$WINESERVER" -w 2>> "$STDERR_LOG" | zenity $ZENITY_SETTINGS \
         --progress --title="Waiting for $WINELOADER proper end" \
         --text="Waiting for $WINELOADER to end properly..." \
         --pulsate --auto-close --no-cancel
@@ -304,22 +307,24 @@ wine_reg_install() {
 
     REG_FILENAME="${1}"
     echo "$WINELOADER regedit.exe ${REG_FILENAME}"
-    "$WINELOADER" regedit.exe "${WORKDIR}"/"${REG_FILENAME}" | zenity $ZENITY_SETTINGS \
+    "$WINELOADER" regedit.exe "${WORKDIR}"/"${REG_FILENAME}" 2>> "$STDERR_LOG" \
+        | zenity $ZENITY_SETTINGS \
         --progress --title="Wine regedit" \
         --text="Wine is installing ${REG_FILENAME} in ${WINEPREFIX}" \
         --pulsate --auto-close --no-cancel
 
     wait_for_wineserver
-    echo "$WINELOADER regedit.exe ${REG_FILENAME} DONE!"
 }
 
 winetricks_install() {
+    ### Run winetricks commands with zenity progress.
+
     parts="$@"
     echo "Running \"winetricks $parts\"..."
     start=$(date +%s)
     # TODO: This "hides" any winetricks output. Maybe not a problem if
     #   everything goes right?
-    "$WINETRICKS_EXE" -q $parts | zenity $ZENITY_SETTINGS \
+    "$WINETRICKS_EXE" -q $parts 2>> "$STDERR_LOG" | zenity $ZENITY_SETTINGS \
         --progress --pulsate --auto-close \
         --title="Installing with winetricks" \
         --text="Running \"winetricks $parts\"... \n\n" &
@@ -344,7 +349,8 @@ winetricks_install() {
 }
 
 alt_winetricks_install() {
-    # The following is ferion11's method, for reference:
+    ### The following is ferion11's method, for reference.
+
     parts="$@"
     # Make pipe for zenity input.
     pipe_winetricks="$(mktemp)"
@@ -360,7 +366,7 @@ alt_winetricks_install() {
     # Get zenity process id.
     PID_ZENITY="${!}"
 
-    "$WINETRICKS_DIR/winetricks" -q $parts | tee "$pipe_winetricks"
+    "$WINETRICKS_DIR/winetricks" -q $parts 2>> "$STDERR_LOG" | tee "$pipe_winetricks"
     EC_WINETRICKS=$?
 
     wait "$PID_ZENITY"
@@ -467,7 +473,7 @@ echo "*** Logos installation file: $INSTALL_FILE"
 echo
 
 # Start Logos installer.
-"$MSIEXEC" /i "$INSTALL_FILE"
+"$MSIEXEC" /i "$INSTALL_FILE" 2>> "$STDERR_LOG"
 OUTNUM=$?
 if [[ "$OUTNUM" -ne 0 ]]; then
     # Some failure: exit
@@ -477,7 +483,8 @@ $INSTALL_FILE"
 fi
 
 # Set Wine to Vista for Logos indexer.
-"$WINELOADER" reg add "HKCU\\Software\\Wine\\AppDefaults\\LogosIndexer.exe" /v Version /t REG_SZ /d vista /f
+"$WINELOADER" reg add "HKCU\\Software\\Wine\\AppDefaults\\LogosIndexer.exe" \
+    /v Version /t REG_SZ /d vista /f 2>> "$STDERR_LOG"
 # Wait for wineserver to finish.
 wait_for_wineserver "$WINEPREFIX"
 
@@ -494,13 +501,16 @@ else
     echo "[Desktop Entry]" > "$logos_launcher"
     echo "Name=Logos Bible Software" >> "$logos_launcher"
     echo "Comment=Launches Logos Bible Software (64bit)" >> "$logos_launcher"
-    echo "Exec=env WINEPREFIX=$WINEPREFIX $WINELOADER \"$logos_exe\"" >> "$logos_launcher"
+    echo "Exec=env WINEPREFIX=\"$WINEPREFIX\" $WINELOADER \"$logos_exe\"" >> "$logos_launcher"
     echo "Icon=${DIR}/resources/logos9-icon-48.png" >> "$logos_launcher"
     echo "Terminal=false" >> "$logos_launcher"
     echo "Type=Application" >> "$logos_launcher"
     echo "Categories=Education;" >> "$logos_launcher"
     echo "StartupWMClass=logos.exe" >> "$logos_launcher"
     chmod +x "$logos_launcher"
+
+    # Remove automatically-created launcher.
+    rm -rf "${user_apps_dir}/wine/Programs/Logos Bible Software.desktop"
 fi
 
 # Final zenity window.
@@ -508,6 +518,6 @@ zenity $ZENITY_SETTINGS --no-wrap \
     --info --title="wasta-logos64-setup: Complete" \
     --text="<b>Logos 64bit setup complete!</b>\n
 <i>Find 'Logos Bible Software' in the <u>Main Menu</u>
-under the <u>'Wine'</u> category</i>"
+under the <u>'Education'</u> category</i>"
 
 exit 0
