@@ -495,7 +495,9 @@ else
     echo "Name=Logos Bible Software" >> "$logos_launcher"
     echo "Comment=Launches Logos Bible Software (64bit)" >> "$logos_launcher"
     echo "Exec=env WINEPREFIX=$WINEPREFIX $WINELOADER \"$logos_exe\"" >> "$logos_launcher"
-    echo "Icon=${DIR}/resources/logos4-128-icon.png" >> "$logos_launcher"
+    # Source link for logos-icon-32-20210527:
+    #   https://files.logoscdn.com/v1/files/45099406/content.png?signature=Ojx3807aFt4ypQhJdAloKeBbZjY
+    echo "Icon=${DIR}/resources/logos-icon-32-20210527.png" >> "$logos_launcher"
     echo "Terminal=false" >> "$logos_launcher"
     echo "Type=Application" >> "$logos_launcher"
     echo "Categories=Education;" >> "$logos_launcher"
