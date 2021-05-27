@@ -114,8 +114,9 @@ echo "$WINELOADER version: $num_version"
 maj=$(echo "$num_version" | awk -F'.' '{print $1}')
 min=$(echo "$num_version" | awk -F'.' '{print $2}')
 if [[ $maj -lt 6 ]]; then
-    echo "Logos 64-bit requires at least v6.0 of wine. If your sysem is already"
-    echo "up-to-date, consider installing from wineHQ: https://wiki.winehq.org/Ubuntu"
+    echo "Logos 64-bit requires at least v6.0 of wine. If you already have the most"
+    echo "recent version of wine from the default repos, then consider installing a"
+    echo "newer version from wineHQ: https://wiki.winehq.org/Ubuntu"
     exit 1
 fi
 
