@@ -491,12 +491,11 @@ else
     mkdir -p "$user_apps_dir"
     logos_launcher="${user_apps_dir}/logos64.desktop"
     logos_exe=$(find "$WINEPREFIX" -name 'Logos.exe' | grep 'Logos/Logos.exe')
-    logos_icon=$(find "$WINEPREFIX" -name 'Logos.exe.icon')
     echo "[Desktop Entry]" > "$logos_launcher"
     echo "Name=Logos Bible Software" >> "$logos_launcher"
     echo "Comment=Launches Logos Bible Software (64bit)" >> "$logos_launcher"
     echo "Exec=env WINEPREFIX=$WINEPREFIX $WINELOADER \"$logos_exe\"" >> "$logos_launcher"
-    echo "Icon=\"$logos_icon\"" >> "$logos_launcher"
+    echo "Icon=${DIR}/resources/logos4-128-icon.png" >> "$logos_launcher"
     echo "Terminal=false" >> "$logos_launcher"
     echo "Type=Application" >> "$logos_launcher"
     echo "Categories=Education;" >> "$logos_launcher"
