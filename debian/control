@@ -11,7 +11,7 @@ Architecture: amd64
 Depends:
  cabextract,
  rsync,
- wasta-wine64|wine64,
+ wasta-wine64|winehq-stable|wine64,
  wasta-winetricks|winetricks,
  xdg-user-dirs,
  zenity,
