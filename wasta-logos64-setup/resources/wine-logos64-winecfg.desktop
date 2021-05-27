@@ -5,5 +5,5 @@ Exec=sh -c "WINEPREFIX=\\$HOME/.wine-logos64/ WINEARCH=win64 WINESERVER=/opt/was
 Terminal=false
 Icon=wine-winecfg
 Type=Application
-Categories=Wine;
+Categories=Settings;
 StartupWMClass=winecfg.exe
