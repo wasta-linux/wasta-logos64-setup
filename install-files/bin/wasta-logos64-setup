@@ -102,7 +102,8 @@ export WINE="$WINELOADER" # needed for winetricks
 export WINEARCH="win64"
 # Note: WINEDLLOVERRIDES was added to try to prevent mono and gecko prompts.
 #   But some users are having freezing issues so I am reverting this.
-export WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe="
+# export WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe="
+export WINEDLLOVERRIDES="mscoree,mshtml="
 export WINELOADER
 export WINEPREFIX=/home/$USER/.wine-logos64
 export WINESERVER
@@ -165,7 +166,7 @@ setupPrefix () {
     # Make registry changes.
     # NOTE: The following is done with WINEDLLOVERRIDES above, but it also
     #   results in numerous winemenubuilder.exe module not found errors.
-    # wine_reg_install "${DIR}/resources/disable-winemenubuilder.reg"
+    wine_reg_install "${DIR}/resources/disable-winemenubuilder.reg"
     # NOTE: The following is installed with winetricks below.
     # wine_reg_install "${DIR}/resources/renderer_gdi.reg"
 
@@ -431,75 +432,81 @@ else
         exit 0
     fi
 fi
+
+# Make Winecfg launcher available for user.
+cp "$DIR/resources/wine-logos64-winecfg.desktop" "$HOME/.local/share/applications/"
+
 echo "Prefix setup complete."
 
 # Ensure that Logos is installed.
-if [[ -d "$WINEPREFIX" ]]; then
-    INSTALL_FILE=""
-    if [[ -e "$DOWNLOAD_DIR/Logos-x64.msi" ]]; then
-        INSTALL_FILE="$DOWNLOAD_DIR/Logos-x64.msi"
-    elif [[ -e "$INSTALLER_DIR/Logos-x64.msi" ]]; then
-        INSTALL_FILE="$INSTALLER_DIR/Logos-x64.msi"
-    else
-        errorExit "<b>A Logos 64bit installer wasn't found in your <i>Downloads</i> folder
+if [[ ! -d "$WINEPREFIX" ]]; then
+    errorExit "<b>A Logos 64bit installer wasn't found in your <i>Downloads</i> folder
 or from the <i>'wasta-logos64-installer'</i> package.</b> You will need to put the
 installer in one of these two locations and then re-run <i>wasta-logos64-setup</i>.
 
 The recommended method is to install the <i>'wasta-logos64-installer'</i> package."
-    fi
+fi
 
-    echo
-    echo "*** Logos installation file: $INSTALL_FILE"
-    echo
+INSTALL_FILE=""
+if [[ -e "$DOWNLOAD_DIR/Logos-x64.msi" ]]; then
+    INSTALL_FILE="$DOWNLOAD_DIR/Logos-x64.msi"
+elif [[ -e "$INSTALLER_DIR/Logos-x64.msi" ]]; then
+    INSTALL_FILE="$INSTALLER_DIR/Logos-x64.msi"
+fi
 
-    if [[ "$INSTALL_FILE" ]]; then
-        # Make Winecfg launcher available for user.
-        mkdir -p $HOME/.local/share/applications
-        winecfg_launcher="$DIR/resources/wine-logos64-winecfg.desktop"
-        if [[ -d "$winecfg_launcher" ]]; then
-            cp $DIR/resources/wine-logos64-winecfg.desktop $HOME/.local/share/applications/
-        fi
+if [[ -z "$INSTALL_FILE" ]]; then
+    # not a valid 'logos*.msi' file: exit
+    errorExit "<b>No valid Logos-x64.msi found.</b>"
+fi
 
-        # Start Logos installer.
-        "$MSIEXEC" /i "$INSTALL_FILE"
-        OUTNUM=$?
-        if [[ "$OUTNUM" -ne 0 ]]; then
-            # Some failure: exit
-            errorExit "<b>Logos 64bit installation failed!</b>\n
+echo
+echo "*** Logos installation file: $INSTALL_FILE"
+echo
+
+# Start Logos installer.
+"$MSIEXEC" /i "$INSTALL_FILE"
+OUTNUM=$?
+if [[ "$OUTNUM" -ne 0 ]]; then
+    # Some failure: exit
+    errorExit "<b>Logos 64bit installation failed!</b>\n
 <i>Some error encountered with installation file:</i>\n
 $INSTALL_FILE"
-        fi
+fi
 
-        # Set Wine to Vista for Logos indexer.
-        "$WINELOADER" reg add "HKCU\\Software\\Wine\\AppDefaults\\LogosIndexer.exe" /v Version /t REG_SZ /d vista /f
+# Set Wine to Vista for Logos indexer.
+"$WINELOADER" reg add "HKCU\\Software\\Wine\\AppDefaults\\LogosIndexer.exe" /v Version /t REG_SZ /d vista /f
+# Wait for wineserver to finish.
+wait_for_wineserver "$WINEPREFIX"
 
-        # Wait for wineserver to finish.
-        wait_for_wineserver "$WINEPREFIX"
-        # not sure why but below edits to launcher were not getting applied
-        #   with a message that the file wasn't found:
-        #   Adding sleep to see if helps
-        logos_launcher=$HOME/.local/share/applications/wine/Programs/Logos\ Bible\ Software.desktop
-        if [[ ! -e "$logos_launcher" ]]; then
-            echo "$logos_launcher not found. Waiting for 2 seconds..."
-            sleep 2
-            if [[ ! -e "$logos_launcher" ]]; then
-                echo "$logos_launcher still not found. Skipping edit."
-            else
-                # Point to specific version of wine to run Logos.
-                sed -i -e "s@ //bin/wine @ $WINELOADER @" $logos_launcher
-            fi
-        fi
+# Ensure Logos launcher.
+logos_exe=$(find "$WINEPREFIX" -name 'Logos.exe' | grep 'Logos/Logos.exe')
+if [[ ! $logos_exe ]]; then
+    echo "Logos.exe not installed. Can't make application launcher."
+else
+    echo "Creating Logos launcher."
+    user_apps_dir="$HOME/.local/share/applications"
+    mkdir -p "$user_apps_dir"
+    logos_launcher="${user_apps_dir}/logos64.desktop"
+    logos_exe=$(find "$WINEPREFIX" -name 'Logos.exe' | grep 'Logos/Logos.exe')
+    logos_icon=$(find "$WINEPREFIX" -name 'Logos.exe.icon')
+    echo "[Desktop Entry]" > "$logos_launcher"
+    echo "Name=Logos Bible Software" >> "$logos_launcher"
+    echo "Comment=Launches Logos Bible Software (64bit)" >> "$logos_launcher"
+    echo "Exec=env WINEPREFIX=$WINEPREFIX $WINELOADER $logos_exe" >> "$logos_launcher"
+    echo "Icon=$logos_icon" >> "$logos_launcher"
+    echo "Terminal=false" >> "$logos_launcher"
+    echo "Type=Application" >> "$logos_launcher"
+    echo "Categories=Education;" >> "$logos_launcher"
+    echo "StartupWMClass=logos.exe" >> "$logos_launcher"
+    chmod +x "$logos_launcher"
+fi
 
-        # Final zenity window.
-        zenity $ZENITY_SETTINGS --no-wrap \
-            --info --title="wasta-logos64-setup: Complete" \
-            --text="<b>Logos 64bit setup complete!</b>\n
+# Final zenity window.
+zenity $ZENITY_SETTINGS --no-wrap \
+    --info --title="wasta-logos64-setup: Complete" \
+    --text="<b>Logos 64bit setup complete!</b>\n
 <i>Find 'Logos Bible Software' in the <u>Main Menu</u>
 under the <u>'Wine'</u> category</i>"
-    else
-        # not a valid 'logos*.msi' file: exit
-        errorExit "<b>No valid Logos-x64.msi found.</b>"
-    fi
 fi
 
 exit 0
