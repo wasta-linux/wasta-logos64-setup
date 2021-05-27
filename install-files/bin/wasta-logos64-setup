@@ -107,6 +107,18 @@ export WINELOADER
 export WINEPREFIX=/home/$USER/.wine-logos64
 export WINESERVER
 
+# Ensure minimum wine version before continuing.
+full_version=$($WINELOADER --version)
+num_version=$(echo "$full_version" | awk '{print $1}' | awk -F'-' '{print $2}')
+echo "$WINELOADER version: $num_version"
+maj=$(echo "$num_version" | awk -F'.' '{print $1}')
+min=$(echo "$num_version" | awk -F'.' '{print $2}')
+if [[ $maj -lt 6 ]]; then
+    echo "Logos 64-bit requires at least v6.0 of wine. If your sysem is already"
+    echo "up-to-date, consider installing from wineHQ: https://wiki.winehq.org/Ubuntu"
+    exit 1
+fi
+
 
 # ------------------------------------------------------------------------------
 # Define functions.
