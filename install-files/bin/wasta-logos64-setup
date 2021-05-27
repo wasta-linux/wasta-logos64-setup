@@ -146,6 +146,7 @@ setupPrefix () {
 
     # Initialize prefix.
     echo "Setting up wine prefix $WINEPREFIX..."
+    mkdir -p "$WINEPREFIX"
     "$WINELOADER" wineboot 2>> "$STDERR_LOG" | zenity $ZENITY_SETTINGS \
         --progress --pulsate --auto-close \
         --title="Setting up Wine Prefix" \
@@ -447,15 +448,7 @@ cp "$DIR/resources/wine-logos64-winecfg.desktop" "$HOME/.local/share/application
 
 echo "Prefix setup complete."
 
-# Ensure that Logos is installed.
-if [[ ! -d "$WINEPREFIX" ]]; then
-    errorExit "<b>A Logos 64bit installer wasn't found in your <i>Downloads</i> folder
-or from the <i>'wasta-logos64-installer'</i> package.</b> You will need to put the
-installer in one of these two locations and then re-run <i>wasta-logos64-setup</i>.
-
-The recommended method is to install the <i>'wasta-logos64-installer'</i> package."
-fi
-
+# Ensure that Logos installer is available.
 INSTALL_FILE=""
 if [[ -e "$DOWNLOAD_DIR/Logos-x64.msi" ]]; then
     INSTALL_FILE="$DOWNLOAD_DIR/Logos-x64.msi"
@@ -464,8 +457,11 @@ elif [[ -e "$INSTALLER_DIR/Logos-x64.msi" ]]; then
 fi
 
 if [[ -z "$INSTALL_FILE" ]]; then
-    # not a valid 'logos*.msi' file: exit
-    errorExit "<b>No valid Logos-x64.msi found.</b>"
+    errorExit "<b>A Logos 64bit installer wasn't found in your <i>Downloads</i> folder
+or from the <i>'wasta-logos64-installer'</i> package.</b> You will need to put the
+installer in one of these two locations and then re-run <i>wasta-logos64-setup</i>.
+
+The recommended method is to install the <i>'wasta-logos64-installer'</i> package."
 fi
 
 echo
