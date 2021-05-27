@@ -202,6 +202,9 @@ errorExit () {
         --title="wasta-logos64-setup: Error" \
         --text="$1 \n
 <i>wasta-logos64-setup will now exit.</i>" >/dev/null 2>&1
+
+    # Ensure all wine processes are killed.
+    wineserver -k
     exit 1
 }
 
