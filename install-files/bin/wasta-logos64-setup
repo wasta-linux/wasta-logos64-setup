@@ -168,10 +168,11 @@ setupPrefix () {
 
     # Install helpful packages and settings.
     # NOTES:
-    # - TODO: ferion does not install dotnet40 explicitly; not needed?
-    # - https://wiki.archlinux.org/index.php/Wine#Enable_font_smoothing
-    # - SetDirectDrawRender to GDI solves graphical glitching of various menus,
-    #   etc disappearing / reappearing)
+    # - ddr: SetDirectDrawRender to GDI solves graphical glitching of various menus,
+    #       etc disappearing / reappearing)
+    # - fontsmooth: https://wiki.archlinux.org/index.php/Wine#Enable_font_smoothing
+    # - TODO: dotnet40: ferion does not install dotnet40 explicitly,
+    #       but is this needed for taking advantage of wasta-dotnet40?
     installs=( \
         "corefonts" \
         "ddr=gdi" \
