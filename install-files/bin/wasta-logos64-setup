@@ -130,7 +130,9 @@ setupPrefix () {
     cleanupPrefix
 
     # Copy in winetricks cache.
-    if [[ -d $WINETRICKS_DIR ]] && [[ -d $HOME/.cache/winetricks/ ]]; then
+    if [[ -d $WINETRICKS_DIR/winetricks-cache/ ]]; then
+        echo "Copying wasta-winetricks cache to user's cache..."
+        mkdir -p "$HOME/.cache/winetricks"
         rsync -av $WINETRICKS_DIR/winetricks-cache/ $HOME/.cache/winetricks/ | tee >(zenity \
             $ZENITY_SETTINGS \
             --progress --pulsate --auto-close \
@@ -139,6 +141,7 @@ setupPrefix () {
     fi
 
     # Initialize prefix.
+    echo "Setting up wine prefix $WINEPREFIX..."
     "$WINELOADER" wineboot | zenity $ZENITY_SETTINGS \
         --progress --pulsate --auto-close \
         --title="Setting up Wine Prefix" \
@@ -255,7 +258,7 @@ wait_for_wineserver() {
         echo "Ignoring argument $1"
         # wait_for_process_using_dir "${1}" | zenity --progress --title="Waiting for $WINELOADER proper end" --text="Waiting for $WINELOADER to end properly..." --pulsate --auto-close --no-cancel
     fi
-	echo "* Waiting for wine64 to end properly..."
+	echo "Waiting for wine64 to end properly..."
 	"$WINESERVER" -w | zenity $ZENITY_SETTINGS \
         --progress --title="Waiting for $WINELOADER proper end" \
         --text="Waiting for $WINELOADER to end properly..." \
