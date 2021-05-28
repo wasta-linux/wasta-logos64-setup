@@ -102,11 +102,19 @@ export WINE="$WINELOADER" # needed for winetricks
 export WINEARCH="win64"
 # Note: WINEDLLOVERRIDES was added to try to prevent mono and gecko prompts.
 #   But some users are having freezing issues so I am reverting this.
-# export WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe="
+# Note: winemenubuilder.exe could be disabled here, but it results in tons of
+#   scary-looking but benign errors. It is instead disabled with a registry
+#   entry later.
 export WINEDLLOVERRIDES="mscoree,mshtml="
 export WINELOADER
-export WINEPREFIX=/home/$USER/.wine-logos64
+export WINEPREFIX="/home/$USER/.wine-logos64"
 export WINESERVER
+
+# Logos variables.
+LOGOS_DATA="$HOME/.logos-data"
+logos_win_path="drive_c/users/$USER/Local Settings/Application Data/Logos"
+LOGOS32_FOLDER="$HOME/.wine-logos/${logos_win_path}"
+LOGOS64_FOLDER="${WINEPREFIX}/${logos_win_path}"
 
 # Define wine-type stderr log for possible review.
 STDERR_LOG="${WINEPREFIX}/wasta-logos64-setup-wine-errors.log"
@@ -204,8 +212,8 @@ errorExit () {
 <i>wasta-logos64-setup will now exit.</i>" >/dev/null 2>&1
 
     # Ensure all wine processes are killed.
-    echo "$(date +'%F %T'): wineserver -k" >> "$STDERR_LOG"
-    wineserver -k >> "$STDERR_LOG"
+    echo "$(date +'%F %T'): $WINESERVER -k" >> "$STDERR_LOG"
+    "$WINESERVER" -k 2>> "$STDERR_LOG"
     echo "$(date +'%F %T'): Exit on error." >> "$STDERR_LOG"
     exit 1
 }
@@ -390,13 +398,15 @@ alt_winetricks_install() {
     # NOTE: sometimes the process finishes before the wait command, giving the error code 127
     if [ "$EC_ZENITY" == "0" ] || [ "$EC_ZENITY" == "127" ] ; then
     	if [ "$EC_WINETRICKS" != "0" ] ; then
-    		wineserver -k
+            echo "$(date +'%F %T'): $WINESERVER -k" >> "$STDERR_LOG"
+    		"$WINESERVER" -k 2>> "$STDERR_LOG"
     		echo "ERROR on : winetricks $parts; EC_WINETRICKS: $EC_WINETRICKS"
             exit 1
     		# gtk_fatal_error "The installation was cancelled because of sub-job failure!\n * winetricks $parts\n  - WINETRICKS_STATUS: ${WINETRICKS_STATUS}"
     	fi
     else
-    	wineserver -k
+        echo "$(date +'%F %T'): $WINESERVER -k" >> "$STDERR_LOG"
+    	"$WINESERVER" -k 2>> "$STDERR_LOG"
         exit 1
     	# gtk_fatal_error "The installation was cancelled!\n * ZENITY_RETURN: ${ZENITY_RETURN}"
     fi
@@ -421,12 +431,46 @@ if [ "$?" -ne 0 ]; then
     exit 0
 fi
 
+
+# ------------------------------------------------------------------------------
+# Move existing Logos data to external folder.
+# ------------------------------------------------------------------------------
+CONTENT_DIRS=( "Data" "Documents" "Users" )
+prefix_dirs=( "$LOGOS32_FOLDER" "$LOGOS64_FOLDER" )
+for c in "${CONTENT_DIRS[@]}"; do
+    mkidr -p "${LOGOS_DATA}/${c}"
+    if [[ $(ls -A "${LOGOS_DATA}/$c") ]]; then
+        # Content folder not empty. Assume it is up-to-date and move on.
+        break
+    fi
+    # Content folder is empty. Check prefix folders for existing user content.
+    for p in "${prefix_dirs[@]}"; do
+        if [[ -d "${p}/${c}" ]] && [[ ! -L "${p}/${c}" ]] && [[ $(ls -A "${p}/${c}") ]]; then
+            # Prefix content folder is not a symlink and is not empty: move it.
+            profiles=$(find "${p}/${c}" -maxdepth 1 -mindepth 1 -type d)
+            echo
+            echo "*** Moving existing Logos $c from ${p}/${c} to ${LOGOS_DATA}/${c}"
+            echo "Profile:"
+            echo "$profiles"
+            echo
+            # Remove LOGOS_DATA folder contents: files in $LOGOS*_FOLDER take precedence.
+            rm -r "${LOGOS_DATA}/${c}/"*
+            mv "${p}/${c}/" "${LOGOS_DATA}/${c}"
+        fi
+    done
+done
+
+# Make sure any residual wine processes are not running (to prevent hanging).
+echo "$(date +'%F %T'): $WINESERVER -k" >> "$STDERR_LOG"
+"$WINESERVER" -k 2>> "$STDERR_LOG"
+
+
 # ------------------------------------------------------------------------------
 # Setup Logos Prefix and install Logos
 # ------------------------------------------------------------------------------
 # Ensure that prefix is setup.
 if [[ -d "$WINEPREFIX" ]]; then
-    # WINEPREFIX exists, ask user if they want to overwrite it or update it.
+    # WINEPREFIX exists, ask user if they want to overwrite it.
     zenity $ZENITY_SETTINGS --no-wrap \
         --question --title="wasta-logos64-setup" \
         --text="<b>Remove existing Logos 64bit Wine Prefix?</b>\n
@@ -522,6 +566,12 @@ else
     # Remove automatically-created launcher.
     rm -rf "${user_apps_dir}/wine/Programs/Logos Bible Software.desktop"
 fi
+
+# Symlink to $LOGOS_DATA.
+for c in "${CONTENT_DIRS[@]}"; do
+    rm -rf "$LOGOS64_FOLDER/${c}"
+    ln -s "$LOGOS_DATA/${c}" "$LOGOS_FOLDER/${c}"
+done
 
 # Final zenity window.
 zenity $ZENITY_SETTINGS --no-wrap \
