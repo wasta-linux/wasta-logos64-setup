@@ -107,7 +107,7 @@ export WINEARCH="win64"
 #   entry later.
 export WINEDLLOVERRIDES="mscoree,mshtml="
 export WINELOADER
-export WINEPREFIX="/home/$USER/.wine-logos64"
+export WINEPREFIX="$HOME/.wine-logos64"
 export WINESERVER
 
 # Logos variables.
