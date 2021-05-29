@@ -438,8 +438,8 @@ fi
 CONTENT_DIRS=( "Data" "Documents" "Users" )
 prefix_dirs=( "$LOGOS32_FOLDER" "$LOGOS64_FOLDER" )
 for c in "${CONTENT_DIRS[@]}"; do
-    mkidr -p "${LOGOS_DATA}/${c}"
-    if [[ $(ls -A "${LOGOS_DATA}/$c") ]]; then
+    mkdir -p "${LOGOS_DATA}/${c}"
+    if [[ $(ls -A "${LOGOS_DATA}/${c}") ]]; then
         # Content folder not empty. Assume it is up-to-date and move on.
         break
     fi
