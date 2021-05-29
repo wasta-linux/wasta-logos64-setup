@@ -455,11 +455,13 @@ for c in "${CONTENT_DIRS[@]}"; do
     for p in "${prefix_dirs[@]}"; do
         if [[ -d "${p}/${c}" ]] && [[ ! -L "${p}/${c}" ]] && [[ $(ls -A "${p}/${c}") ]]; then
             # Prefix content folder is not a symlink and is not empty: move it.
-            profiles=$(find "${p}/${c}" -maxdepth 1 -mindepth 1 -type d)
+            files=$(find "${p}/${c}" -maxdepth 1 -mindepth 1)
             echo
-            echo "*** Moving existing Logos $c from ${p}/${c} to ${LOGOS_DATA}/${c}"
-            echo "Profile:"
-            echo "$profiles"
+            echo "*** Moving existing Logos $c"
+            echo "from: ${p}/${c}"
+            echo "to:   ${LOGOS_DATA}/${c}"
+            echo "Files:"
+            echo "$files"
             echo
             # Remove LOGOS_DATA folder contents: files in $LOGOS*_FOLDER take precedence.
             rm -rf "${LOGOS_DATA}/${c}/"*
