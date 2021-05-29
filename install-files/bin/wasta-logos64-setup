@@ -455,7 +455,7 @@ for c in "${CONTENT_DIRS[@]}"; do
             echo
             # Remove LOGOS_DATA folder contents: files in $LOGOS*_FOLDER take precedence.
             rm -rf "${LOGOS_DATA}/${c}/"*
-            mv "${p}/${c}" "${LOGOS_DATA}/${c}"
+            mv "${p}/${c}/"* "${LOGOS_DATA}/${c}"
         fi
     done
 done
