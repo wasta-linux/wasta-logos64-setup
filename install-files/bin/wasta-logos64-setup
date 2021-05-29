@@ -179,7 +179,10 @@ setupPrefix () {
     # Make registry changes.
     # NOTE: The following is done with WINEDLLOVERRIDES above, but it also
     #   results in numerous winemenubuilder.exe module not found errors.
-    wine_reg_install "${DIR}/resources/disable-winemenubuilder.reg"
+    # wine_reg_install "${DIR}/resources/disable-winemenubuilder.reg"
+    # NOTE: Using "reg add" avoids having to install an additional file in the package.
+    "$WINELOADER" reg add "HKCU\\Software\\Wine\\DllOverrides" \
+        /v winemenubuilder.exe /t REG_SZ /d '' /f 2>> "$STDERR_LOG"
     # NOTE: The following is installed with winetricks below.
     # wine_reg_install "${DIR}/resources/renderer_gdi.reg"
 
@@ -201,6 +204,11 @@ setupPrefix () {
     done
 
     cleanupPrefix
+
+    # Make Winecfg launcher available for user.
+    cp "$DIR/resources/wine-logos64-winecfg.desktop" "$HOME/.local/share/applications/"
+
+    echo -e "Prefix setup complete.\n"
 }
 
 errorExit () {
@@ -365,7 +373,7 @@ winetricks_install() {
     wait_for_wineserver "$WINEPREFIX"
     end=$(date +%s)
     duration=$(($end - $start))
-    echo "Completed \"winetricks $parts\" in $duration seconds."
+    echo -e "Completed \"winetricks $parts\" in $duration seconds.\n"
 }
 
 alt_winetricks_install() {
@@ -498,11 +506,6 @@ else
         exit 0
     fi
 fi
-
-# Make Winecfg launcher available for user.
-cp "$DIR/resources/wine-logos64-winecfg.desktop" "$HOME/.local/share/applications/"
-
-echo "Prefix setup complete."
 
 # Ensure that Logos installer is available.
 INSTALL_FILE=""
