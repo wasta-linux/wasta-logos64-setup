@@ -528,6 +528,8 @@ echo "*** Logos installation file: $INSTALL_FILE"
 echo
 
 # Start Logos installer.
+# echo "$(date +'%F %T'): $MSIEXEC" /i "$INSTALL_FILE" /passive >> "$STDERR_LOG"
+# "$MSIEXEC" /i "$INSTALL_FILE" /passive 2>> "$STDERR_LOG" # to reduce user effort
 echo "$(date +'%F %T'): $MSIEXEC" /i "$INSTALL_FILE" >> "$STDERR_LOG"
 "$MSIEXEC" /i "$INSTALL_FILE" 2>> "$STDERR_LOG"
 OUTNUM=$?
