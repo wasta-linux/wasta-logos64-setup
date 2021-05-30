@@ -125,7 +125,7 @@ echo "$WINELOADER version: $num_version"
 maj=$(echo "$num_version" | awk -F'.' '{print $1}')
 min=$(echo "$num_version" | awk -F'.' '{print $2}')
 if [[ $maj -lt 6 ]]; then
-    echo "Logos 64-bit requires at least v6.0 of wine. If you already have the most"
+    echo "Logos (64-bit) requires at least v6.0 of wine. If you already have the most"
     echo "recent version of wine from the default repos, then consider installing a"
     echo "newer version from wineHQ: https://wiki.winehq.org/Ubuntu"
     exit 1
@@ -418,9 +418,9 @@ alt_winetricks_install() {
 
 zenity $ZENITY_SETTINGS --no-wrap \
     --question --title="wasta-logos64-setup" \
-    --text="<b>Do you want to install Logos (64bit) using Wine?</b>\n
+    --text="<b>Do you want to install Logos (64-bit) using Wine?</b>\n
 <b>Processing Summary:</b>
-   * Create a 'Logos 64bit Wine Prefix' using a patched wine from 'wasta-wine64'
+   * Create a 'Logos (64-bit) Wine Prefix' using a patched wine from 'wasta-wine64'
    * Install .NET 4.8 from 'wasta-winetricks'
    * Install Logos"
 if [[ "$?" -ne 0 ]]; then
@@ -472,9 +472,9 @@ if [[ -d "$WINEPREFIX" ]]; then
     # WINEPREFIX exists, ask user if they want to overwrite it.
     zenity $ZENITY_SETTINGS --no-wrap \
         --question --title="wasta-logos64-setup" \
-        --text="<b>Remove existing Logos 64bit Wine Prefix?</b>\n
-<i>A Logos 64-bit Wine Prefix already exists at: <u>'$WINEPREFIX'</u>.\n
-Do you want to delete it in order to setup a new Logos 64-bit Wine Prefix\n
+        --text="<b>Remove existing Logos (64-bit) Wine Prefix?</b>\n
+<i>A Logos (64-bit) Wine Prefix already exists at: <u>'$WINEPREFIX'</u>.\n
+Do you want to delete it in order to setup a new Logos (64-bit) Wine Prefix\n
 and reinstall Logos?</i>\n"
 
     if [[ "$?" -eq 0 ]]; then
@@ -486,8 +486,8 @@ else
     # No WINEPREFIX: prompt user.
     zenity $ZENITY_SETTINGS --no-wrap \
         --question --title="wasta-logos64-setup" \
-        --text="<b>Setup Logos 64-bit Wine Prefix?</b>\n
-<i>Do you want to setup a new Logos 64-bit Wine Prefix?</i>\n"
+        --text="<b>Setup Logos (64-bit) Wine Prefix?</b>\n
+<i>Do you want to setup a new Logos (64-bit) Wine Prefix?</i>\n"
 
     if [[ "$?" -eq 0 ]]; then
         # User said yes: setup WINEPREFIX.
@@ -506,7 +506,7 @@ elif [[ -e "$INSTALLER_DIR/Logos-x64.msi" ]]; then
 fi
 
 if [[ -z "$INSTALL_FILE" ]]; then
-    error_exit "<b>A Logos 64-bit installer wasn't found in your <i>Downloads</i> folder
+    error_exit "<b>A Logos (64-bit) installer wasn't found in your <i>Downloads</i> folder
 or from the <i>'wasta-logos64-installer'</i> package.</b> You will need to put the
 installer in one of these two locations and then re-run <i>wasta-logos64-setup</i>.
 
@@ -525,7 +525,7 @@ echo "$(date +'%F %T'): $MSIEXEC" /i "$INSTALL_FILE" >> "$STDERR_LOG"
 OUTNUM=$?
 if [[ "$OUTNUM" -ne 0 ]]; then
     # Some failure: exit
-    error_exit "<b>Logos 64-bit installation failed!</b>\n
+    error_exit "<b>Logos (64-bit) installation failed!</b>\n
 <i>Some error encountered with installation file:</i>\n
 $INSTALL_FILE"
 fi
@@ -549,7 +549,7 @@ else
     logos_exe=$(find "$WINEPREFIX" -name 'Logos.exe' | grep 'Logos/Logos.exe')
     echo "[Desktop Entry]" > "$logos_launcher"
     echo "Name=Logos Bible Software" >> "$logos_launcher"
-    echo "Comment=Launches Logos Bible Software (64bit)" >> "$logos_launcher"
+    echo "Comment=Launches Logos Bible Software (64-bit)" >> "$logos_launcher"
     echo "Exec=env WINEPREFIX=\"$WINEPREFIX\" $WINELOADER \"$logos_exe\"" >> "$logos_launcher"
     echo "Icon=${DIR}/resources/logos9-icon-48.png" >> "$logos_launcher"
     echo "Terminal=false" >> "$logos_launcher"
@@ -571,7 +571,7 @@ done
 # Final zenity window.
 zenity $ZENITY_SETTINGS --no-wrap \
     --info --title="wasta-logos64-setup: Complete" \
-    --text="<b>Logos 64-bit setup complete!</b>\n
+    --text="<b>Logos (64-bit) setup complete!</b>\n
 <i>Find 'Logos Bible Software' in the <u>Main Menu</u>
 under the <u>'Education'</u> category</i>"
 
