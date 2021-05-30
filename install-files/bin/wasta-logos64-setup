@@ -559,7 +559,8 @@ else
     chmod +x "$logos_launcher"
 
     # Remove automatically-created launcher.
-    rm -rf "${user_apps_dir}/wine/Programs/Logos Bible Software.desktop"
+    grep -r -l --null "${WINEPREFIX}" "$HOME/.local/share/applications" \
+        | xargs -0 rm >/dev/null 2>&1
 fi
 
 # Symlink to $LOGOS_DATA.
