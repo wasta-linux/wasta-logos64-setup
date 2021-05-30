@@ -115,7 +115,7 @@ logos_win_path="drive_c/users/$USER/Local Settings/Application Data/Logos"
 LOGOS32_FOLDER="$HOME/.wine-logos/${logos_win_path}"
 LOGOS64_FOLDER="${WINEPREFIX}/${logos_win_path}"
 
-# Define wine-type stderr log for possible review.
+# Define stderr log for wine-related commands.
 STDERR_LOG="${WINEPREFIX}/wasta-logos64-setup-wine-errors.log"
 
 # Ensure minimum wine version before continuing.
@@ -176,16 +176,10 @@ setupPrefix () {
     wait_for_wineserver
 
     # Make registry changes.
-    # NOTE: The following is done with WINEDLLOVERRIDES above, but it also
-    #   results in numerous winemenubuilder.exe module not found errors.
-    # wine_reg_install "${DIR}/resources/disable-winemenubuilder.reg"
-    # NOTE: Using "reg add" avoids having to install an additional file in the package.
     "$WINELOADER" reg add "HKCU\\Software\\Wine\\DllOverrides" \
         /v winemenubuilder.exe /t REG_SZ /d '' /f 2>> "$STDERR_LOG"
-    # NOTE: The following is installed with winetricks below.
-    # wine_reg_install "${DIR}/resources/renderer_gdi.reg"
 
-    # Install helpful packages and settings.
+    # Install helpful winetricks packages and settings.
     # NOTES:
     # - ddr: SetDirectDrawRender to GDI solves graphical glitching of various menus,
     #       etc disappearing / reappearing)
@@ -228,9 +222,9 @@ errorExit () {
 cleanupPrefix () {
     ### Perform various cleanup items for the Logos wine prefix.
 
-    # remove desktop entries referencing $PREFIX.
-    # note: grep --null returns null separated list to handle space in filenames
-    # note: xargs -0 to handle null separated items
+    # Remove desktop entries referencing $PREFIX.
+    # NOTE: grep --null returns null separated list to handle space in filenames.
+    # NOTE: xargs -0 to handle null separated items.
     if [[ -d "$HOME/.local/share/applications" ]]; then
         grep -r -l --null "$WINEPREFIX" "$HOME/.local/share/applications" \
             | xargs -0 rm >/dev/null 2>&1
@@ -240,36 +234,33 @@ cleanupPrefix () {
 progressCheck () {
     PID_ZENITY="$1"
     PID_PROCESS="$2"
+    cmd_proc=$(ps -p $PID_PROCESS o args=)
     ### Check on process launched in parallel with zenity.
     ###     If zenity is canceled, then kill process.
 
     echo
-    echo "*** Watching zenity process. If it is canceled then kill PID_PROCESS: $PID_PROCESS"
-    echo
+    echo "*** Watching zenity window ($PID_ZENITY). If it is canceled, then"
+    echo "*** $cmd_proc ($PID_PROCESS) will be killed."
 
-    # loop to check that progress dialog has not been cancelled
-    while [ "$PID_ZENITY" != "" ]
-    do
-        # check if zenity PID is still there (dialog box still open)
+    # Loop to check that progress dialog has not been canceled.
+    while [[ "$PID_ZENITY" != "" ]]; do
+        sleep 1
+
+        # Check if zenity PID is still there (dialog box still open).
         PID_ZENITY=$(ps h -o pid --pid ${PID_ZENITY} | xargs)
-
-        # sleep for 2 seconds
-        sleep 2
     done
 
-    # if other task still there, kill it
+    # If other task still there, kill it.
     ps "${PID_PROCESS}"
     if [[ "$?" -eq 0 ]]; then
-        # parallel process STILL FOUND: user canceled so kill it!
-        echo
-        echo "*** Zenity process ended (canceled) before parallel process: Killing PID_PROCESS: $PID_PROCESS"
+        # Parallel process STILL FOUND: user canceled so kill it!
+        echo "*** Zenity window canceled. Killing $cmd_proc ($PID_PROCESS)."
         echo
         kill -9 ${PID_PROCESS}
         return 99
     else
-        # parallel process NOT found after zenity completed: both completed
-        echo
-        echo "*** Zenity process and parallel process both ended: success"
+        # Parallel process NOT found after zenity completed: both completed.
+        echo "*** Zenity process and $cmd_proc both ended: success"
         echo
         return 0
     fi
