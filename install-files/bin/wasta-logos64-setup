@@ -135,10 +135,10 @@ fi
 # ------------------------------------------------------------------------------
 # Define functions.
 # ------------------------------------------------------------------------------
-setupPrefix () {
+setup_prefix() {
     ### Setup the WINE prefix for Logos.
 
-    cleanupPrefix
+    cleanup_prefix
 
     # Copy in winetricks cache.
     if [[ -d $WINETRICKS_DIR/winetricks-cache/ ]]; then
@@ -165,11 +165,11 @@ setupPrefix () {
     # get firstly created process id, which is running parallel to zenity
     PID_PROCESS=$(pgrep -o -P $$)
 
-    progressCheck $PID_ZENITY $PID_PROCESS
+    progress_check $PID_ZENITY $PID_PROCESS
     if [[ "$?" -eq 99 ]]; then
         # zenity canceled, Prefix setup didn't complete
         # some failure: exit
-        errorExit "<b>Setup of Logos Wine Prefix failed!</b>"
+        error_exit "<b>Setup of Logos Wine Prefix failed!</b>"
     fi
 
     # Make sure residual wine processes clear out.
@@ -196,7 +196,7 @@ setupPrefix () {
         winetricks_install $i
     done
 
-    cleanupPrefix
+    cleanup_prefix
 
     # Make Winecfg launcher available for user.
     cp "$DIR/resources/wine-logos64-winecfg.desktop" "$HOME/.local/share/applications/"
@@ -204,7 +204,7 @@ setupPrefix () {
     echo -e "Prefix setup complete.\n"
 }
 
-errorExit () {
+error_exit() {
     ### Exit script with passed message.
     zenity $ZENITY_SETTINGS \
         --error --no-wrap \
@@ -219,7 +219,7 @@ errorExit () {
     exit 1
 }
 
-cleanupPrefix () {
+cleanup_prefix() {
     ### Perform various cleanup items for the Logos wine prefix.
 
     # Remove desktop entries referencing $PREFIX.
@@ -231,7 +231,7 @@ cleanupPrefix () {
     fi
 }
 
-progressCheck () {
+progress_check() {
     PID_ZENITY="$1"
     PID_PROCESS="$2"
     cmd_proc=$(ps -p $PID_PROCESS o args=)
@@ -350,10 +350,10 @@ winetricks_install() {
     # Get firstly created process id, which is running parallel to zenity.
     PID_PROCESS=$(pgrep -o -P $$)
 
-    progressCheck $PID_ZENITY $PID_PROCESS
+    progress_check $PID_ZENITY $PID_PROCESS
     if [[ "$?" -eq 99 ]]; then
         # Zenity canceled, winetricks install didn't complete.
-        errorExit "<b>$parts install in Logos Wine Prefix failed!</b>"
+        error_exit "<b>$parts install in Logos Wine Prefix failed!</b>"
     fi
 
     echo "$(date +'%F %T'): End of $WINETRICKS_EXE -q $parts" >> "$STDERR_LOG"
@@ -473,24 +473,25 @@ if [[ -d "$WINEPREFIX" ]]; then
     zenity $ZENITY_SETTINGS --no-wrap \
         --question --title="wasta-logos64-setup" \
         --text="<b>Remove existing Logos 64bit Wine Prefix?</b>\n
-<i>The folder <u>'$WINEPREFIX'</u> already exists. Do you want to
-delete it in order to re-setup a new Logos 64bit Wine Prefix?</i>\n"
+<i>A Logos 64-bit Wine Prefix already exists at: <u>'$WINEPREFIX'</u>.\n
+Do you want to delete it in order to setup a new Logos 64-bit Wine Prefix\n
+and reinstall Logos?</i>\n"
 
     if [[ "$?" -eq 0 ]]; then
         # Remove WINEPREFIX.
         rm -rf $WINEPREFIX
     fi
-    setupPrefix
+    setup_prefix
 else
     # No WINEPREFIX: prompt user.
     zenity $ZENITY_SETTINGS --no-wrap \
         --question --title="wasta-logos64-setup" \
-        --text="<b>Setup Logos 64bit Wine Prefix?</b>\n
-<i>Do you want to setup a new Logos 64bit Wine Prefix?</i>\n"
+        --text="<b>Setup Logos 64-bit Wine Prefix?</b>\n
+<i>Do you want to setup a new Logos 64-bit Wine Prefix?</i>\n"
 
     if [[ "$?" -eq 0 ]]; then
         # User said yes: setup WINEPREFIX.
-        setupPrefix
+        setup_prefix
     else
         exit 0
     fi
@@ -505,7 +506,7 @@ elif [[ -e "$INSTALLER_DIR/Logos-x64.msi" ]]; then
 fi
 
 if [[ -z "$INSTALL_FILE" ]]; then
-    errorExit "<b>A Logos 64bit installer wasn't found in your <i>Downloads</i> folder
+    error_exit "<b>A Logos 64-bit installer wasn't found in your <i>Downloads</i> folder
 or from the <i>'wasta-logos64-installer'</i> package.</b> You will need to put the
 installer in one of these two locations and then re-run <i>wasta-logos64-setup</i>.
 
@@ -524,7 +525,7 @@ echo "$(date +'%F %T'): $MSIEXEC" /i "$INSTALL_FILE" >> "$STDERR_LOG"
 OUTNUM=$?
 if [[ "$OUTNUM" -ne 0 ]]; then
     # Some failure: exit
-    errorExit "<b>Logos 64bit installation failed!</b>\n
+    error_exit "<b>Logos 64-bit installation failed!</b>\n
 <i>Some error encountered with installation file:</i>\n
 $INSTALL_FILE"
 fi
@@ -570,7 +571,7 @@ done
 # Final zenity window.
 zenity $ZENITY_SETTINGS --no-wrap \
     --info --title="wasta-logos64-setup: Complete" \
-    --text="<b>Logos 64bit setup complete!</b>\n
+    --text="<b>Logos 64-bit setup complete!</b>\n
 <i>Find 'Logos Bible Software' in the <u>Main Menu</u>
 under the <u>'Education'</u> category</i>"
 
