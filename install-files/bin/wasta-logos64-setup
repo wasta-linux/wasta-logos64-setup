@@ -25,8 +25,7 @@
 # ------------------------------------------------------------------------------
 # Ensure script running as regular user
 # ------------------------------------------------------------------------------
-if [ $(id -u) -eq 0 ]
-then
+if [[ $(id -u) -eq 0 ]]; then
     echo "wasta-logos64-setup started as root user."
     echo "No processing done.  Exiting...."
     exit 0
@@ -167,7 +166,7 @@ setupPrefix () {
     PID_PROCESS=$(pgrep -o -P $$)
 
     progressCheck $PID_ZENITY $PID_PROCESS
-    if [ "$?" -eq 99 ]; then
+    if [[ "$?" -eq 99 ]]; then
         # zenity canceled, Prefix setup didn't complete
         # some failure: exit
         errorExit "<b>Setup of Logos Wine Prefix failed!</b>"
@@ -260,8 +259,7 @@ progressCheck () {
 
     # if other task still there, kill it
     ps "${PID_PROCESS}"
-    if [ "$?" -eq 0 ];
-    then
+    if [[ "$?" -eq 0 ]]; then
         # parallel process STILL FOUND: user canceled so kill it!
         echo
         echo "*** Zenity process ended (canceled) before parallel process: Killing PID_PROCESS: $PID_PROCESS"
@@ -312,7 +310,7 @@ wait_for_process_using_dir() {
 
 		FIST_PID="$(lsof -t "${VERIFICATION_DIR}" | head -n 1)"
 		echo "wait_for_process_using_dir FIST_PID: ${FIST_PID}"
-		if [ -n "${FIST_PID}" ]; then
+		if [[ -n "${FIST_PID}" ]]; then
 			i=0
 			echo "wait_for_process_using_dir: tail --pid=${FIST_PID} -f /dev/null"
 			tail --pid="${FIST_PID}" -f /dev/null
@@ -362,7 +360,7 @@ winetricks_install() {
     PID_PROCESS=$(pgrep -o -P $$)
 
     progressCheck $PID_ZENITY $PID_PROCESS
-    if [ "$?" -eq 99 ]; then
+    if [[ "$?" -eq 99 ]]; then
         # Zenity canceled, winetricks install didn't complete.
         errorExit "<b>$parts install in Logos Wine Prefix failed!</b>"
     fi
@@ -404,8 +402,8 @@ alt_winetricks_install() {
     rm -rf "$pipe_winetricks"
 
     # NOTE: sometimes the process finishes before the wait command, giving the error code 127
-    if [ "$EC_ZENITY" == "0" ] || [ "$EC_ZENITY" == "127" ] ; then
-    	if [ "$EC_WINETRICKS" != "0" ] ; then
+    if [[ "$EC_ZENITY" == "0" ]] || [[ "$EC_ZENITY" == "127" ]] ; then
+    	if [[ "$EC_WINETRICKS" != "0" ]] ; then
             echo "$(date +'%F %T'): $WINESERVER -k" >> "$STDERR_LOG"
     		"$WINESERVER" -k 2>> "$STDERR_LOG"
     		echo "ERROR on : winetricks $parts; EC_WINETRICKS: $EC_WINETRICKS"
@@ -434,7 +432,7 @@ zenity $ZENITY_SETTINGS --no-wrap \
    * Create a 'Logos 64bit Wine Prefix' using a patched wine from 'wasta-wine64'
    * Install .NET 4.8 from 'wasta-winetricks'
    * Install Logos"
-if [ "$?" -ne 0 ]; then
+if [[ "$?" -ne 0 ]]; then
     # User didn't say yes; exit.
     exit 0
 fi
@@ -487,8 +485,7 @@ if [[ -d "$WINEPREFIX" ]]; then
 <i>The folder <u>'$WINEPREFIX'</u> already exists. Do you want to
 delete it in order to re-setup a new Logos 64bit Wine Prefix?</i>\n"
 
-    if [ "$?" -eq 0 ];
-    then
+    if [[ "$?" -eq 0 ]]; then
         # Remove WINEPREFIX.
         rm -rf $WINEPREFIX
     fi
@@ -500,8 +497,7 @@ else
         --text="<b>Setup Logos 64bit Wine Prefix?</b>\n
 <i>Do you want to setup a new Logos 64bit Wine Prefix?</i>\n"
 
-    if [ "$?" -eq 0 ];
-    then
+    if [[ "$?" -eq 0 ]]; then
         # User said yes: setup WINEPREFIX.
         setupPrefix
     else
