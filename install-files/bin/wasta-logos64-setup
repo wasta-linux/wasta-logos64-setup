@@ -564,8 +564,11 @@ fi
 
 # Symlink to $LOGOS_DATA.
 for c in "${CONTENT_DIRS[@]}"; do
-    rm -rf "$LOGOS64_FOLDER/${c}"
-    ln -s "$LOGOS_DATA/${c}" "$LOGOS64_FOLDER/${c}"
+    # Symlink to both 32-bit and 64-bit prefixes, just in case someone wants
+    #   to keep both of them functional.
+    for p in "${prefix_dirs}"; do
+        rm -rf "${p}/${c}"
+        ln -s "$LOGOS_DATA/${c}" "${p}/${c}"
 done
 
 # Final zenity window.
