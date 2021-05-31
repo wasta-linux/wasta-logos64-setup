@@ -542,6 +542,11 @@ logos_exe=$(find "$WINEPREFIX" -name 'Logos.exe' | grep 'Logos/Logos.exe')
 if [[ ! $logos_exe ]]; then
     echo "Logos.exe not installed. Can't make application launcher."
 else
+    # Remove automatically-created launcher.
+    grep -r -l --null "${WINEPREFIX}" "$HOME/.local/share/applications" \
+        | xargs -0 rm >/dev/null 2>&1
+
+    # Create new launcher.
     echo "Creating Logos launcher."
     user_apps_dir="$HOME/.local/share/applications"
     mkdir -p "$user_apps_dir"
@@ -557,10 +562,6 @@ else
     echo "Categories=Education;" >> "$logos_launcher"
     echo "StartupWMClass=logos.exe" >> "$logos_launcher"
     chmod +x "$logos_launcher"
-
-    # Remove automatically-created launcher.
-    grep -r -l --null "${WINEPREFIX}" "$HOME/.local/share/applications" \
-        | xargs -0 rm >/dev/null 2>&1
 fi
 
 # Symlink to $LOGOS_DATA.
@@ -570,6 +571,7 @@ for c in "${CONTENT_DIRS[@]}"; do
     for p in "${prefix_dirs}"; do
         rm -rf "${p}/${c}"
         ln -s "$LOGOS_DATA/${c}" "${p}/${c}"
+    done
 done
 
 # Final zenity window.
