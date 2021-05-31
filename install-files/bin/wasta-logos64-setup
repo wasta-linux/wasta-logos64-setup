@@ -548,7 +548,7 @@ else
     logos_launcher="${user_apps_dir}/logos64.desktop"
     logos_exe=$(find "$WINEPREFIX" -name 'Logos.exe' | grep 'Logos/Logos.exe')
     echo "[Desktop Entry]" > "$logos_launcher"
-    echo "Name=Logos Bible Software" >> "$logos_launcher"
+    echo "Name=Logos Bible Software (64-bit)" >> "$logos_launcher"
     echo "Comment=Launches Logos Bible Software (64-bit)" >> "$logos_launcher"
     echo "Exec=env WINEPREFIX=\"$WINEPREFIX\" $WINELOADER \"$logos_exe\"" >> "$logos_launcher"
     echo "Icon=${DIR}/resources/logos9-icon-48.png" >> "$logos_launcher"
