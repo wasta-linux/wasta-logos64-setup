@@ -1,3 +1,9 @@
+wasta-logos64-setup (0.9.2) focal; urgency=medium
+
+  * Made app name unique from 32-bit app.
+
+ -- Nate Marti <nate_marti@sil.org>  Mon, 31 May 2021 09:46:12 +0100
+
 wasta-logos64-setup (0.9.1) focal; urgency=medium
 
   * Added in helpful tidbids from ferion11 script.
