@@ -569,7 +569,7 @@ fi
 for c in "${CONTENT_DIRS[@]}"; do
     # Symlink to both 32-bit and 64-bit prefixes, just in case someone wants
     #   to keep both of them functional.
-    for p in "${prefix_dirs}"; do
+    for p in "${prefix_dirs[@]}"; do
         rm -rf "${p}/${c}"
         ln -s "$LOGOS_DATA/${c}" "${p}/${c}"
     done
