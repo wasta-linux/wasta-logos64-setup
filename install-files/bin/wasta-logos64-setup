@@ -151,9 +151,15 @@ setup_prefix() {
             --text="Copying Winetricks Cache... \n\n")
     fi
 
-    # Initialize prefix.
+    # Create prefix folder.
     echo "Setting up wine prefix $WINEPREFIX..."
     mkdir -p "$WINEPREFIX"
+
+    # Make sure any residual wine processes are not running (to prevent hanging).
+    echo "$(date +'%F %T'): $WINESERVER -k" >> "$STDERR_LOG"
+    "$WINESERVER" -k 2>> "$STDERR_LOG"
+
+    # Initialize prefix.
     echo "$(date +'%F %T'): $WINELOADER wineboot" >> "$STDERR_LOG"
     "$WINELOADER" wineboot 2>> "$STDERR_LOG" | zenity $ZENITY_SETTINGS \
         --progress --pulsate --auto-close \
@@ -458,11 +464,6 @@ for c in "${CONTENT_DIRS[@]}"; do
         fi
     done
 done
-
-# Make sure any residual wine processes are not running (to prevent hanging).
-echo "$(date +'%F %T'): $WINESERVER -k" >> "$STDERR_LOG"
-"$WINESERVER" -k 2>> "$STDERR_LOG"
-
 
 # ------------------------------------------------------------------------------
 # Setup Logos Prefix and install Logos

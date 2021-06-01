@@ -1,3 +1,9 @@
+wasta-logos64-setup (0.9.3) focal; urgency=medium
+
+  * Create error log during wine prefix setup, not before.
+
+ -- Nate Marti <nate_marti@sil.org>  Tue, 01 Jun 2021 09:14:07 +0100
+
 wasta-logos64-setup (0.9.2) focal; urgency=medium
 
   * Made app name unique from 32-bit app.
