@@ -44,7 +44,7 @@ DOWNLOAD_DIR="$(xdg-user-dir DOWNLOAD)"
 WINETRICKS_DIR=/opt/wasta-winetricks
 
 # Zenity settings.
-ZENITY_SETTINGS="--height=200 --width=500 --window-icon=$DIR/resources/wasta-linux.svg"
+ZENITY_SETTINGS="--height=200 --width=500 --window-icon=/usr/share/icons/hicolor/scalable/apps/wasta-logos64.svg"
 
 # Executables
 WINELOADER="${WINE_DIR}/bin/wine64"
