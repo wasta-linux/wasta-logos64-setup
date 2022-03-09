@@ -19,6 +19,7 @@
 #   2020-05-11 rik: adding sleep before launcher edits
 #   2020-05-18 rik: setting Downloads folder from xdg-user-dir
 #   2020-05-25 ndm: updating with tips from ferion11 install script
+#   2022-03-09 ndm: install dotnet40 before dotnet48 to avoid failures
 #
 # ==============================================================================
 
@@ -196,6 +197,7 @@ setup_prefix() {
         "corefonts" \
         "ddr=gdi" \
         "settings fontsmooth=rgb" \
+        "dotnet40" \
         "dotnet48" \
     )
     for i in "${installs[@]}"; do
