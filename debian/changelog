@@ -1,3 +1,11 @@
+wasta-logos64-setup (1.0.1) focal; urgency=medium
+
+  * account for symlinking to Win7 directories
+    (c:\users\<user>\AppData) as well as WinXP directories
+    (c:\users\<user>\Local Settings\)
+
+ -- Rik Shaw <rikshaw76@gmail.com>  Fri, 11 Mar 2022 10:12:40 -0600
+
 wasta-logos64-setup (1.0.0) focal; urgency=medium
 
   * install dotnet40 explicitly rather than relying on dotnet48

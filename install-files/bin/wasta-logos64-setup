@@ -112,7 +112,10 @@ export WINESERVER
 
 # Logos variables.
 LOGOS_DATA="$HOME/.logos-data"
+logos_win_legacy="drive_c/users/$USER/AppData/Local/Logos"
 logos_win_path="drive_c/users/$USER/Local Settings/Application Data/Logos"
+LOGOS32_LEGACY_FOLDER="$HOME/.wine-logos/${logos_win_legacy}"
+LOGOS64_LEGACY_FOLDER="${WINEPREFIX}/${logos_win_legacy}"
 LOGOS32_FOLDER="$HOME/.wine-logos/${logos_win_path}"
 LOGOS64_FOLDER="${WINEPREFIX}/${logos_win_path}"
 
@@ -440,7 +443,7 @@ fi
 # Move existing Logos data to external folder.
 # ------------------------------------------------------------------------------
 CONTENT_DIRS=( "Data" "Documents" "Users" )
-prefix_dirs=( "$LOGOS32_FOLDER" "$LOGOS64_FOLDER" )
+prefix_dirs=( "$LOGOS32_LEGACY_FOLDER" "$LOGOS64_LEGACY_FOLDER" "$LOGOS32_FOLDER" "$LOGOS64_FOLDER" )
 for c in "${CONTENT_DIRS[@]}"; do
     mkdir -p "${LOGOS_DATA}/${c}"
     if [[ $(ls -A "${LOGOS_DATA}/${c}") ]]; then
@@ -571,8 +574,15 @@ for c in "${CONTENT_DIRS[@]}"; do
     # Symlink to both 32-bit and 64-bit prefixes, just in case someone wants
     #   to keep both of them functional.
     for p in "${prefix_dirs[@]}"; do
-        rm -rf "${p}/${c}"
-        ln -s "$LOGOS_DATA/${c}" "${p}/${c}"
+        if [[ -d "${p}" ]]; then
+            echo
+            echo "*** Linking Logos $c"
+            echo "from: ${LOGOS_DATA}/${c}"
+            echo "to:   ${p}/${c}"
+            echo
+            rm -rf "${p}/${c}"
+            ln -s "$LOGOS_DATA/${c}" "${p}/${c}"
+        fi
     done
 done
 
